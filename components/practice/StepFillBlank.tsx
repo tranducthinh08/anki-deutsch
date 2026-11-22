@@ -177,55 +177,60 @@ export default function StepFillBlank({
           const isThisCorrect =
             opt.de.trim().toLowerCase() === exercise.correctWord.trim().toLowerCase();
 
-          let btnStyle = "bg-[#0c1427]/90 border-slate-800 hover:border-cyan-400/50 hover:bg-[#101c36] text-slate-100";
+          let cardStyle = "bg-[#0c1427]/90 border-slate-800 hover:border-cyan-400/50 hover:bg-[#101c36] text-slate-100 cursor-pointer";
 
           if (isAnswered) {
             if (isThisCorrect) {
-              btnStyle = "bg-emerald-950/80 border-emerald-400 text-emerald-200 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
+              cardStyle = "bg-emerald-950/80 border-emerald-400 text-emerald-200 shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-default";
             } else if (isThisSelected && !isThisCorrect) {
-              btnStyle = "bg-rose-950/80 border-rose-400 text-rose-200";
+              cardStyle = "bg-rose-950/80 border-rose-400 text-rose-200 cursor-default";
             } else {
-              btnStyle = "bg-[#080d19]/60 border-slate-800 text-slate-500 opacity-50";
+              cardStyle = "bg-[#080d19]/60 border-slate-800 text-slate-500 opacity-50 cursor-default";
             }
           }
 
           return (
-            <div key={idx} className="relative group">
-              <button
-                type="button"
-                onClick={() => handleSelect(opt.de)}
-                disabled={isAnswered}
-                className={cn(
-                  "w-full p-4 rounded-xl border font-bold text-base transition-all duration-200 flex items-center justify-between text-left",
-                  btnStyle
+            <div
+              key={idx}
+              role="button"
+              tabIndex={isAnswered ? -1 : 0}
+              onClick={() => handleSelect(opt.de)}
+              onKeyDown={(e) => {
+                if (!isAnswered && (e.key === "Enter" || e.key === " ")) {
+                  e.preventDefault();
+                  handleSelect(opt.de);
+                }
+              }}
+              className={cn(
+                "relative group w-full p-4 rounded-xl border font-bold text-base transition-all duration-200 flex items-center justify-between text-left select-none",
+                cardStyle
+              )}
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="w-5 h-5 rounded-md bg-slate-900 border border-slate-700/80 text-[10px] text-slate-400 flex items-center justify-center font-mono">
+                  {idx + 1}
+                </span>
+                <span>{opt.de}</span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                {/* Tap-to-translate button */}
+                <button
+                  type="button"
+                  onClick={(e) => handleInspect(e, opt)}
+                  className="p-1 rounded-lg text-slate-500 hover:text-cyan-300 hover:bg-cyan-950/40 transition-colors"
+                  title={`Chạm để dịch nghĩa từ "${opt.de}"`}
+                >
+                  <HelpCircle size={15} />
+                </button>
+
+                {isAnswered && isThisCorrect && (
+                  <CheckCircle2 size={18} className="text-emerald-400" />
                 )}
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="w-5 h-5 rounded-md bg-slate-900 border border-slate-700/80 text-[10px] text-slate-400 flex items-center justify-center font-mono">
-                    {idx + 1}
-                  </span>
-                  <span>{opt.de}</span>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  {/* Tap-to-translate button */}
-                  <button
-                    type="button"
-                    onClick={(e) => handleInspect(e, opt)}
-                    className="p-1 rounded-lg text-slate-500 hover:text-cyan-300 hover:bg-cyan-950/40 transition-colors"
-                    title={`Chạm để dịch nghĩa từ "${opt.de}"`}
-                  >
-                    <HelpCircle size={15} />
-                  </button>
-
-                  {isAnswered && isThisCorrect && (
-                    <CheckCircle2 size={18} className="text-emerald-400" />
-                  )}
-                  {isAnswered && isThisSelected && !isThisCorrect && (
-                    <XCircle size={18} className="text-rose-400" />
-                  )}
-                </div>
-              </button>
+                {isAnswered && isThisSelected && !isThisCorrect && (
+                  <XCircle size={18} className="text-rose-400" />
+                )}
+              </div>
             </div>
           );
         })}
