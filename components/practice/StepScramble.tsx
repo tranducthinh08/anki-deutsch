@@ -50,10 +50,10 @@ export default function StepScramble({
   const [isAnswered, setIsAnswered] = useState(isStepDone);
   const [isCorrect, setIsCorrect] = useState(isStepDone);
 
-  // Interaction mode: "arrange" (default) or "translate" (tap any word to see its translation)
+  // Interaction mode: "arrange" (default) or "translate"
   const [mode, setMode] = useState<"arrange" | "translate">("arrange");
 
-  // Track which specific words have had their translation revealed by the user
+  // Track which specific words have had their translation revealed
   const [revealedIds, setRevealedIds] = useState<Set<number>>(new Set());
 
   // Active tooltip/inspected word
@@ -78,26 +78,93 @@ export default function StepScramble({
     setActiveTooltip(null);
   }, [exercise]);
 
-  // Handle clicking a word chip in the pool
-  const handleChipClick = (wordObj: WordToken) => {
+  const handleSpeak = (text: string) => {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "de-DE";
+      utter.rate = 0.9;
+      window.speechSynthesis.speak(utter);
+    }
+  };
+
+  const handleSelectWord = (token: WordToken) => {
     if (isAnswered) return;
 
     if (mode === "translate") {
-      // In translate mode: tapping anywhere on the chip reveals meaning
-      inspectWord(wordObj);
+      inspectWord(token);
       return;
     }
 
-    // In arrange mode: tapping moves the word into the sentence
-    setAvailableWords((prev) => prev.filter((w) => w.id !== wordObj.id));
-    setSelectedWords((prev) => [...prev, wordObj]);
-    handleSpeak(wordObj.text);
+    setAvailableWords((prev) => prev.filter((w) => w.id !== token.id));
+    setSelectedWords((prev) => [...prev, token]);
+    handleSpeak(token.text);
   };
 
-  const handleRemoveWord = (wordObj: WordToken) => {
+  const handleDeselectWord = (token: WordToken) => {
     if (isAnswered) return;
-    setSelectedWords((prev) => prev.filter((w) => w.id !== wordObj.id));
-    setAvailableWords((prev) => [...prev, wordObj]);
+
+    if (mode === "translate") {
+      inspectWord(token);
+      return;
+    }
+
+    setSelectedWords((prev) => prev.filter((w) => w.id !== token.id));
+    setAvailableWords((prev) => [...prev, token]);
+  };
+
+  const inspectWord = async (token: WordToken) => {
+    handleSpeak(token.text);
+    setRevealedIds((prev) => new Set(prev).add(token.id));
+
+    if (token.meaning) {
+      setActiveTooltip({ word: token });
+      return;
+    }
+
+    setActiveTooltip({
+      word: { ...token, meaning: "Đang tra nghĩa..." },
+      loading: true,
+    });
+
+    try {
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          word: token.text,
+          contextSentence: exercise.correctSentence,
+        }),
+      });
+      const data = await res.json();
+      const fetchedMeaning = data.meaning || "Từ vựng tiếng Đức";
+
+      token.meaning = fetchedMeaning;
+      setActiveTooltip({ word: { ...token, meaning: fetchedMeaning } });
+    } catch {
+      setActiveTooltip({
+        word: { ...token, meaning: "Không tra được nghĩa" },
+      });
+    }
+  };
+
+  const cleanString = (s: string) =>
+    s
+      .replace(/[.,!?;:]/g, "")
+      .trim()
+      .toLowerCase();
+
+  const handleCheck = () => {
+    const userSentence = selectedWords.map((w) => w.text).join(" ");
+    const correct = cleanString(userSentence) === cleanString(exercise.correctSentence);
+
+    setIsAnswered(true);
+    setIsCorrect(correct);
+
+    if (correct) {
+      handleSpeak(exercise.correctSentence);
+      onStepSuccess?.();
+    }
   };
 
   const handleReset = () => {
@@ -111,366 +178,255 @@ export default function StepScramble({
     setSelectedWords([]);
     setIsAnswered(false);
     setIsCorrect(false);
-    setRevealedIds(new Set());
     setActiveTooltip(null);
-  };
-
-  // Inspect and translate a word when tapped
-  const inspectWord = async (wordObj: WordToken, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    handleSpeak(wordObj.text);
-
-    // Mark as revealed so its meaning can show on the chip
-    setRevealedIds((prev) => {
-      const next = new Set(prev);
-      next.add(wordObj.id);
-      return next;
-    });
-
-    if (wordObj.meaning) {
-      setActiveTooltip({ word: wordObj, loading: false });
-      return;
-    }
-
-    setActiveTooltip({
-      word: { ...wordObj, meaning: "Đang tra nghĩa..." },
-      loading: true,
-    });
-
-    try {
-      const res = await fetch("/api/translate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          word: wordObj.text,
-          contextSentence: exercise.correctSentence,
-        }),
-      });
-      const data = await res.json();
-      const meaning = data.meaning || "Từ vựng tiếng Đức";
-
-      const updated = { ...wordObj, meaning };
-      setAvailableWords((prev) =>
-        prev.map((w) => (w.id === wordObj.id ? updated : w))
-      );
-      setSelectedWords((prev) =>
-        prev.map((w) => (w.id === wordObj.id ? updated : w))
-      );
-      setActiveTooltip({ word: updated, loading: false });
-    } catch {
-      setActiveTooltip({
-        word: { ...wordObj, meaning: "Không tra được nghĩa" },
-        loading: false,
-      });
-    }
-  };
-
-  const handleCheck = () => {
-    if (selectedWords.length === 0) return;
-
-    const userSentence = selectedWords.map((w) => w.text).join(" ").trim();
-    const normalize = (s: string) => s.replace(/[.,!?;:]/g, "").trim().toLowerCase();
-
-    const correct = normalize(userSentence) === normalize(exercise.correctSentence);
-    setIsCorrect(correct);
-    setIsAnswered(true);
-
-    if (correct) {
-      handleSpeak(exercise.correctSentence);
-      onStepSuccess?.();
-    }
-  };
-
-  const handleSpeak = (text: string) => {
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = "de-DE";
-      window.speechSynthesis.speak(utter);
-    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Title & Badge */}
-      <div className="flex items-center justify-between">
+      {/* Exercise Subtitle & Mode Switcher */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 text-xs font-bold flex items-center justify-center">
+          <span className="w-6 h-6 rounded-lg bg-sky-950/70 text-sky-400 border border-sky-500/30 flex items-center justify-center text-xs font-bold">
             2
           </span>
-          <h3 className="font-semibold text-slate-800 text-base">
-            Bước 2: Sắp xếp từ thành câu đúng
+          <h3 className="text-sm font-bold text-slate-200">
+            Sắp xếp các từ thành câu hoàn chỉnh
           </h3>
         </div>
 
-        {/* Mode Toggle Bar: Arrange vs Tap to Translate */}
-        <div className="inline-flex rounded-xl p-1 bg-slate-100 border border-slate-200 text-xs">
+        {/* Mode Toggle Button */}
+        <div className="flex items-center gap-1.5 self-start sm:self-auto">
           <button
             type="button"
-            onClick={() => setMode("arrange")}
+            onClick={() => setMode(mode === "arrange" ? "translate" : "arrange")}
             className={cn(
-              "px-3 py-1 rounded-lg font-semibold transition-all flex items-center gap-1",
-              mode === "arrange"
-                ? "bg-white text-indigo-700 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
-            )}
-          >
-            <span>👆 Xếp câu</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode("translate")}
-            className={cn(
-              "px-3 py-1 rounded-lg font-semibold transition-all flex items-center gap-1",
+              "px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border",
               mode === "translate"
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-slate-500 hover:text-indigo-600"
+                ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 shadow-[0_0_12px_rgba(6,182,212,0.3)]"
+                : "bg-slate-900/60 text-slate-400 hover:text-cyan-300 border-slate-800"
             )}
-            title="Chạm vào bất kỳ từ nào để tra nghĩa tiếng Việt"
+            title="Bấm vào để chuyển chế độ: Xếp câu hoặc Tra nghĩa từng từ"
           >
-            <Search size={12} />
-            <span>Chạm để dịch</span>
+            {mode === "translate" ? (
+              <>
+                <Search size={13} className="text-cyan-400" />
+                <span>Đang bật: Chạm để dịch</span>
+              </>
+            ) : (
+              <>
+                <HelpCircle size={13} />
+                <span>Chạm để dịch</span>
+              </>
+            )}
           </button>
         </div>
       </div>
 
-      {/* Target prompt */}
-      <div className="bg-purple-50/70 border border-purple-100 rounded-2xl p-4 text-center space-y-1">
-        <p className="text-xs font-semibold text-purple-700 uppercase tracking-wider">
-          Sắp xếp các từ theo câu có nghĩa:
-        </p>
-        <p className="text-base sm:text-lg font-bold text-slate-800">
-          &ldquo;{exercise.translation}&rdquo;
+      {/* Target Sentence Meaning Hint */}
+      <div className="bg-[#080d19] border border-sky-500/20 rounded-2xl p-4 text-center">
+        <p className="text-xs text-slate-400 mb-1">Dịch nghĩa câu cần tạo:</p>
+        <p className="text-base font-extrabold text-cyan-200">
+          &quot;{exercise.translation}&quot;
         </p>
       </div>
 
-      {/* Answer Drop Area */}
-      <div className="min-h-[76px] p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-wrap items-center justify-center gap-2.5 transition-all">
+      {/* Selected Words Dropzone (Magnetic Dock) */}
+      <div
+        className={cn(
+          "min-h-[110px] p-5 rounded-2xl border-2 border-dashed transition-all flex flex-wrap items-center justify-center gap-2.5",
+          selectedWords.length === 0
+            ? "border-slate-800 bg-[#070c18]/60"
+            : "border-cyan-500/40 bg-[#091326]/60 shadow-[0_0_20px_rgba(6,182,212,0.1)]"
+        )}
+      >
         {selectedWords.length === 0 ? (
-          <span className="text-sm text-slate-400 italic">
-            Chạm vào các từ bên dưới để ghép vào đây...
-          </span>
+          <p className="text-xs text-slate-500 select-none">
+            {mode === "translate"
+              ? "Đang ở chế độ Tra nghĩa. Hãy chuyển sang Chế độ Xếp câu để kéo thả."
+              : "Chạm vào các từ bên dưới để xếp thành câu..."}
+          </p>
         ) : (
-          selectedWords.map((wordObj) => {
-            const hasMeaning = revealedIds.has(wordObj.id) && wordObj.meaning;
+          selectedWords.map((token) => {
+            const hasMeaning = revealedIds.has(token.id) && token.meaning;
             return (
-              <div
-                key={wordObj.id}
-                onClick={() => handleRemoveWord(wordObj)}
-                className="group relative cursor-pointer py-2 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all transform active:scale-95 flex flex-col items-center"
+              <button
+                key={token.id}
+                type="button"
+                onClick={() => handleDeselectWord(token)}
+                disabled={isAnswered}
+                className="group relative px-4 py-2.5 rounded-xl bg-gradient-to-b from-[#132342] to-[#0d1830] text-cyan-100 border border-cyan-400/40 hover:border-rose-400 font-bold text-sm shadow-[0_0_15px_rgba(6,182,212,0.15)] flex flex-col items-center transition-all transform hover:-translate-y-0.5 active:translate-y-0"
               >
-                <span className="text-base font-bold leading-tight">{wordObj.text}</span>
+                <span>{token.text}</span>
                 {hasMeaning && (
-                  <span className="text-[10px] text-indigo-200 leading-none mt-0.5 font-normal">
-                    {wordObj.meaning}
+                  <span className="text-[10px] text-cyan-300/80 font-normal mt-0.5">
+                    {token.meaning}
                   </span>
                 )}
-              </div>
+              </button>
             );
           })
         )}
       </div>
 
-      {/* Word Pool Area */}
+      {/* Word Pool */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs text-slate-500 px-1">
-          {mode === "translate" ? (
-            <span className="text-indigo-600 font-semibold flex items-center gap-1">
-              <Sparkles size={13} /> Chế độ tra từ đang bật: Chạm vào từ bất kỳ để xem nghĩa!
+        <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+          <span>Kho từ vựng:</span>
+          {mode === "translate" && (
+            <span className="text-cyan-400 font-semibold animate-pulse">
+              🔍 Chạm vào từ bất kỳ để nghe & xem nghĩa
             </span>
-          ) : (
-            <span>Chạm vào từ để xếp vào câu (hoặc bấm ❓ bên cạnh để xem nghĩa):</span>
           )}
         </div>
 
-        {/* Clean Word Chips Grid */}
-        <div className="flex flex-wrap items-center justify-center gap-3 min-h-[64px] p-3 bg-slate-50/70 rounded-2xl border border-slate-100">
-          {availableWords.map((wordObj) => {
-            const isRevealed = revealedIds.has(wordObj.id) && wordObj.meaning;
-            const isInspecting = activeTooltip?.word.id === wordObj.id;
-
-            return (
-              <div
-                key={wordObj.id}
-                className={cn(
-                  "relative inline-flex items-center rounded-2xl border-2 transition-all shadow-sm overflow-hidden",
-                  isInspecting
-                    ? "border-indigo-500 ring-4 ring-indigo-100 bg-indigo-50/30"
-                    : "border-slate-200 hover:border-indigo-300 bg-white"
-                )}
-              >
-                {/* Main Chip Body */}
+        <div className="flex flex-wrap items-center justify-center gap-2.5 p-4 bg-[#080d19] rounded-2xl border border-slate-800 min-h-[90px]">
+          {availableWords.length === 0 ? (
+            <p className="text-xs text-slate-500">Đã dùng hết tất cả các từ.</p>
+          ) : (
+            availableWords.map((token) => {
+              const hasMeaning = revealedIds.has(token.id) && token.meaning;
+              return (
                 <button
+                  key={token.id}
                   type="button"
-                  onClick={() => handleChipClick(wordObj)}
+                  onClick={() => handleSelectWord(token)}
                   disabled={isAnswered}
-                  className="py-2.5 px-4 flex flex-col items-center justify-center hover:bg-indigo-50/30 transition-colors"
+                  className={cn(
+                    "px-4 py-2.5 rounded-xl font-bold text-sm border transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex flex-col items-center",
+                    mode === "translate"
+                      ? "bg-cyan-950/40 border-cyan-500/50 text-cyan-200 hover:bg-cyan-900/50 shadow-[0_0_12px_rgba(6,182,212,0.2)]"
+                      : "bg-[#0d162c] border-slate-700/80 hover:border-cyan-400/60 text-slate-100 hover:text-cyan-200 hover:bg-[#111e3b] shadow-sm"
+                  )}
                 >
-                  <span className="text-base font-bold text-slate-800 leading-tight">
-                    {wordObj.text}
-                  </span>
-
-                  {/* ONLY show meaning if the user tapped to reveal this specific word */}
-                  {isRevealed && (
-                    <span className="text-[11px] text-indigo-600 font-semibold leading-tight mt-0.5 animate-in fade-in">
-                      {wordObj.meaning}
+                  <span>{token.text}</span>
+                  {hasMeaning && (
+                    <span className="text-[10px] text-cyan-300/80 font-normal mt-0.5">
+                      {token.meaning}
                     </span>
                   )}
                 </button>
-
-                {/* Question mark / info button to inspect without moving */}
-                <button
-                  type="button"
-                  onClick={(e) => inspectWord(wordObj, e)}
-                  className="px-2 py-3 border-l border-slate-100 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-                  title={`Tra nghĩa từ "${wordObj.text}"`}
-                >
-                  <HelpCircle size={14} />
-                </button>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
 
-      {/* Floating Meaning Popover Card (appears ONLY when user taps/inspects a word) */}
+      {/* Active Word Tooltip Popover */}
       {activeTooltip && (
-        <div className="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-md animate-in fade-in zoom-in-95 duration-200">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-black text-indigo-950">
-                {activeTooltip.word.text}
-              </span>
-              <button
-                onClick={() => handleSpeak(activeTooltip.word.text)}
-                className="p-1 rounded-full text-indigo-600 hover:bg-indigo-100 transition-colors"
-                title="Nghe phát âm"
-              >
-                <Volume2 size={16} />
-              </button>
-            </div>
-            <p className="text-sm font-semibold text-slate-800">
-              💬 Nghĩa:{" "}
-              {activeTooltip.loading ? (
-                <span className="inline-flex items-center gap-1 text-slate-400 font-normal">
-                  <Loader2 size={13} className="animate-spin" /> Đang dịch...
-                </span>
-              ) : (
-                <span className="text-indigo-700 font-bold">
-                  {activeTooltip.word.meaning || "Từ vựng tiếng Đức"}
-                </span>
-              )}
-            </p>
-          </div>
-
+        <div className="bg-[#0c162e] border border-cyan-500/30 rounded-xl p-3 flex items-center justify-between gap-3 text-xs animate-in fade-in duration-150">
           <div className="flex items-center gap-2">
-            {/* If in available pool, provide a direct button to place it */}
-            {availableWords.some((w) => w.id === activeTooltip.word.id) && (
-              <button
-                onClick={() => {
-                  handleChipClick(activeTooltip.word);
-                  setActiveTooltip(null);
-                }}
-                className="flex items-center gap-1 text-xs font-bold px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-colors"
-              >
-                <Check size={13} />
-                <span>Xếp vào câu</span>
-              </button>
+            <span className="font-bold text-cyan-300 text-sm">
+              {activeTooltip.word.text}:
+            </span>
+            <span className="text-slate-300">{activeTooltip.word.meaning}</span>
+            {activeTooltip.loading && (
+              <Loader2 size={12} className="animate-spin text-cyan-400" />
             )}
-
-            <button
-              onClick={() => setActiveTooltip(null)}
-              className="text-xs font-semibold px-2.5 py-2 rounded-xl bg-white border border-indigo-200 text-slate-600 hover:bg-slate-50 transition-colors"
-            >
-              Đóng
-            </button>
           </div>
-        </div>
-      )}
-
-      {/* Action buttons (Check / Reset) */}
-      {!isAnswered && (
-        <div className="flex items-center justify-end gap-2 pt-2">
-          {selectedWords.length > 0 && (
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-800 hover:bg-slate-100 text-xs font-semibold transition-colors"
-            >
-              <RotateCcw size={14} /> Xóa làm lại
-            </button>
-          )}
           <button
-            onClick={handleCheck}
-            disabled={selectedWords.length === 0}
-            className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white text-sm font-semibold transition-all shadow-sm"
+            onClick={() => setActiveTooltip(null)}
+            className="text-slate-500 hover:text-white text-xs px-1"
           >
-            <span>Kiểm tra câu</span>
-            <ArrowRight size={15} />
+            Đóng
           </button>
         </div>
       )}
 
-      {/* Feedback box */}
+      {/* Grammar Rule Callout: Verb auf Position 2 */}
+      <div className="bg-sky-950/20 border border-sky-500/20 rounded-xl p-3 flex items-center gap-2 text-xs text-sky-300">
+        <Sparkles size={14} className="text-sky-400 flex-shrink-0" />
+        <span>
+          <strong>Quy tắc A1 cơ bản:</strong> Trong câu trần thuật tiếng Đức, động từ chia luôn đứng ở <strong>vị trí số 2</strong>.
+        </span>
+      </div>
+
+      {/* Submit Button */}
+      {!isAnswered && (
+        <div className="flex justify-end gap-3 pt-1">
+          <button
+            type="button"
+            onClick={handleReset}
+            disabled={selectedWords.length === 0}
+            className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-40 transition-colors"
+          >
+            Xếp lại từ đầu
+          </button>
+          <button
+            type="button"
+            onClick={handleCheck}
+            disabled={selectedWords.length === 0}
+            className="px-6 py-2.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 hover:from-cyan-400 hover:to-blue-500 shadow-[0_0_15px_rgba(6,182,212,0.3)] disabled:opacity-40 transition-all"
+          >
+            Kiểm tra câu
+          </button>
+        </div>
+      )}
+
+      {/* Feedback & Explanation Card */}
       {isAnswered && (
         <div
           className={cn(
-            "p-4 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm",
-            isCorrect ? "bg-emerald-50 border-emerald-200 text-emerald-900" : "bg-red-50 border-red-200 text-red-900"
+            "p-5 rounded-2xl border space-y-3 animate-in fade-in zoom-in-95 duration-200",
+            isCorrect
+              ? "bg-emerald-950/30 border-emerald-500/30 text-emerald-200"
+              : "bg-rose-950/30 border-rose-500/30 text-rose-200"
           )}
         >
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-1.5 font-bold">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
               {isCorrect ? (
                 <>
-                  <CheckCircle2 size={18} className="text-emerald-600" />
-                  <span>Chính xác hoàn hảo! 🎉</span>
+                  <CheckCircle2 size={18} className="text-emerald-400" />
+                  <span className="font-bold text-sm text-emerald-300">
+                    Chính xác! Câu hoàn toàn đúng ngữ pháp 🎉
+                  </span>
                 </>
               ) : (
                 <>
-                  <XCircle size={18} className="text-red-500" />
-                  <span>
-                    Chưa đúng trật tự câu rồi! Đáp án chuẩn: &ldquo;{exercise.correctSentence}&rdquo;
+                  <XCircle size={18} className="text-rose-400" />
+                  <span className="font-bold text-sm text-rose-300">
+                    Vị trí từ chưa chuẩn! Hãy xem đáp án đúng bên dưới
                   </span>
                 </>
               )}
             </div>
 
-            {isCorrect && (
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-emerald-800">{exercise.correctSentence}</span>
-                <button
-                  onClick={() => handleSpeak(exercise.correctSentence)}
-                  className="text-emerald-600 hover:text-emerald-800 p-0.5"
-                  title="Nghe"
-                >
-                  <Volume2 size={16} />
-                </button>
-              </div>
-            )}
-
-            {exercise.explanation && (
-              <p className="text-xs text-slate-600 flex items-start gap-1">
-                <Lightbulb size={13} className="text-amber-500 flex-shrink-0 mt-0.5" />
-                <span>{exercise.explanation}</span>
-              </p>
-            )}
+            <button
+              onClick={() => handleSpeak(exercise.correctSentence)}
+              className="p-1 rounded-full text-slate-400 hover:text-white transition-colors"
+              title="Nghe câu hoàn chỉnh"
+            >
+              <Volume2 size={16} />
+            </button>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            {!isCorrect ? (
+          <div className="text-xs space-y-1.5 text-slate-300 bg-[#070d19]/80 p-3.5 rounded-xl border border-slate-800">
+            <div className="flex items-start gap-2">
+              <Lightbulb size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-slate-200">
+                  Câu đúng: <span className="text-cyan-300 font-bold">{exercise.correctSentence}</span>
+                </p>
+                <p className="text-slate-400 mt-1">{exercise.explanation}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-1">
+            {!isCorrect && (
               <button
                 onClick={handleReset}
-                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white border border-red-200 hover:bg-red-100/50 text-red-700 text-xs font-semibold transition-colors"
+                className="px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition-colors"
               >
-                <RotateCcw size={14} /> Thử lại
+                <RotateCcw size={13} /> Thử lại
               </button>
-            ) : null}
+            )}
 
             <button
               onClick={onComplete}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors shadow-sm"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 hover:from-cyan-400 hover:to-blue-500 flex items-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all"
             >
-              <span>Bước 3: Viết câu</span>
+              <span>Tiếp tục Bước 3 (Viết câu AI)</span>
               <ArrowRight size={14} />
             </button>
           </div>

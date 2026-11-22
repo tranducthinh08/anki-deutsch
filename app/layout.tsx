@@ -5,8 +5,8 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "🇩🇪 Anki Deutsch Practice",
-  description: "Luyện viết câu tiếng Đức từ những từ đã học hôm nay",
+  title: "🇩🇪 DeutschFlow • Anki A1 Mastery",
+  description: "Luyện tập tiếng Đức A1 thông minh với màu đen xanh cyber & Gemini AI",
 };
 
 export default function RootLayout({
@@ -15,8 +15,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi" suppressHydrationWarning>
-      <body className={geist.className} suppressHydrationWarning>{children}</body>
+    <html lang="vi" className="dark" suppressHydrationWarning>
+      <body
+        className={`${geist.className} bg-[#060913] text-slate-100 min-h-screen antialiased selection:bg-cyan-500 selection:text-slate-950`}
+        suppressHydrationWarning
+      >
+        {children}
+      </body>
     </html>
   );
 }

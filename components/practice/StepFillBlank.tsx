@@ -10,6 +10,8 @@ import {
   RotateCcw,
   HelpCircle,
   Loader2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -41,12 +43,12 @@ export default function StepFillBlank({
     isStepDone ? exercise.correctWord : null
   );
   const [isAnswered, setIsAnswered] = useState(isStepDone);
+  const [showSentenceTranslation, setShowSentenceTranslation] = useState(false);
 
   // Inspected option for quick translation popover (ONLY shows when tapped)
   const [inspectingWord, setInspectingWord] = useState<{ de: string; vi: string } | null>(null);
   const [loadingTranslation, setLoadingTranslation] = useState(false);
 
-  // Normalize options into { de, vi }
   const parsedOptions: OptionItem[] = exercise.options.map((opt) => {
     if (typeof opt === "string") {
       return { de: opt, vi: "" };
@@ -56,6 +58,16 @@ export default function StepFillBlank({
 
   const isCorrect =
     selectedOption?.trim().toLowerCase() === exercise.correctWord.trim().toLowerCase();
+
+  const handleSpeak = (text: string) => {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "de-DE";
+      utter.rate = 0.9;
+      window.speechSynthesis.speak(utter);
+    }
+  };
 
   const handleSelect = (optionText: string) => {
     if (isAnswered) return;
@@ -103,206 +115,198 @@ export default function StepFillBlank({
     }
   };
 
-  const handleSpeak = (text: string) => {
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = "de-DE";
-      window.speechSynthesis.speak(utter);
-    }
-  };
-
-  const fullSentence = isCorrect
-    ? exercise.sentenceWithBlank.replace("___", exercise.correctWord)
-    : exercise.sentenceWithBlank;
+  // Render sentence with stylish blank slot
+  const parts = exercise.sentenceWithBlank.split("___");
 
   return (
     <div className="space-y-6">
-      {/* Title & Badge */}
+      {/* Exercise Subtitle */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">
+          <span className="w-6 h-6 rounded-lg bg-cyan-950/70 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-xs font-bold">
             1
           </span>
-          <h3 className="font-semibold text-slate-800 text-base">
-            Bước 1: Điền từ vào chỗ trống
+          <h3 className="text-sm font-bold text-slate-200">
+            Điền từ thích hợp vào chỗ trống
           </h3>
         </div>
-        <span className="text-xs text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full font-medium">
-          Nhận diện từ vựng
+        <span className="text-[11px] font-semibold text-cyan-400 bg-cyan-950/50 px-2.5 py-0.5 rounded-full border border-cyan-800/40">
+          Nhận diện ngữ cảnh
         </span>
       </div>
 
-      {/* Exercise Box */}
-      <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-center space-y-3">
-        <div className="flex items-center justify-center gap-2">
-          <p className="text-xl sm:text-2xl font-bold text-slate-800 tracking-wide">
-            {isCorrect ? (
-              <span className="text-emerald-700">{fullSentence}</span>
-            ) : (
-              exercise.sentenceWithBlank.split("___").map((part, i, arr) => (
-                <span key={i}>
-                  {part}
-                  {i < arr.length - 1 && (
-                    <span className="inline-block px-3 py-0.5 mx-1.5 border-b-2 border-dashed border-indigo-400 bg-indigo-50/50 text-indigo-700 rounded font-semibold">
-                      {selectedOption ? selectedOption : "______"}
-                    </span>
-                  )}
-                </span>
-              ))
-            )}
-          </p>
-          {isCorrect && (
+      {/* German Sentence Box */}
+      <div className="bg-[#080d19] border border-cyan-500/25 rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-[0_0_25px_rgba(6,182,212,0.1)]">
+        <p className="text-xl sm:text-2xl font-extrabold text-white leading-relaxed tracking-tight">
+          {parts[0]}
+          <span className="inline-block mx-1.5 px-3 py-1 rounded-xl bg-cyan-950/80 border-2 border-dashed border-cyan-400 text-cyan-300 font-black min-w-[100px] text-center shadow-[0_0_12px_rgba(6,182,212,0.3)]">
+            {selectedOption || "_______"}
+          </span>
+          {parts[1]}
+        </p>
+
+        {/* Translation Toggle */}
+        <div className="pt-2">
+          {showSentenceTranslation ? (
+            <div className="inline-flex items-center gap-2 bg-[#0c162e] border border-slate-800 px-4 py-2 rounded-xl text-xs text-slate-300 animate-in fade-in">
+              <span>Nghĩa: &quot;{exercise.translation}&quot;</span>
+              <button
+                onClick={() => setShowSentenceTranslation(false)}
+                className="text-slate-500 hover:text-slate-300 ml-1"
+                title="Ẩn câu dịch"
+              >
+                <EyeOff size={13} />
+              </button>
+            </div>
+          ) : (
             <button
-              onClick={() => handleSpeak(fullSentence)}
-              className="text-slate-400 hover:text-indigo-600 transition-colors p-1"
-              title="Nghe phát âm"
+              onClick={() => setShowSentenceTranslation(true)}
+              className="text-xs text-slate-500 hover:text-cyan-400 inline-flex items-center gap-1.5 font-medium transition-colors"
             >
-              <Volume2 size={20} />
+              <Eye size={13} />
+              <span>Xem câu dịch tiếng Việt</span>
             </button>
           )}
         </div>
-
-        <p className="text-sm text-slate-500 font-medium">
-          💬 Nghĩa: &ldquo;{exercise.translation}&rdquo;
-        </p>
       </div>
 
-      {/* Options grid (Clean German text, no permanent meaning) */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* 4 Choices Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {parsedOptions.map((opt, idx) => {
           const isThisSelected = selectedOption === opt.de;
           const isThisCorrect =
             opt.de.trim().toLowerCase() === exercise.correctWord.trim().toLowerCase();
 
-          let btnStyle =
-            "bg-white border-slate-200 hover:border-indigo-300 text-slate-700 hover:bg-indigo-50/30";
+          let btnStyle = "bg-[#0c1427]/90 border-slate-800 hover:border-cyan-400/50 hover:bg-[#101c36] text-slate-100";
+
           if (isAnswered) {
             if (isThisCorrect) {
-              btnStyle =
-                "bg-emerald-50 border-emerald-400 text-emerald-800 font-semibold ring-2 ring-emerald-200";
-            } else if (isThisSelected) {
-              btnStyle = "bg-red-50 border-red-300 text-red-700 font-semibold";
+              btnStyle = "bg-emerald-950/80 border-emerald-400 text-emerald-200 shadow-[0_0_15px_rgba(16,185,129,0.3)]";
+            } else if (isThisSelected && !isThisCorrect) {
+              btnStyle = "bg-rose-950/80 border-rose-400 text-rose-200";
             } else {
-              btnStyle = "bg-slate-50 border-slate-200 text-slate-400 opacity-60";
+              btnStyle = "bg-[#080d19]/60 border-slate-800 text-slate-500 opacity-50";
             }
           }
 
           return (
-            <div
-              key={idx}
-              className="relative flex items-stretch rounded-2xl border-2 transition-all shadow-sm overflow-hidden"
-            >
+            <div key={idx} className="relative group">
               <button
                 type="button"
                 onClick={() => handleSelect(opt.de)}
                 disabled={isAnswered}
                 className={cn(
-                  "flex-1 py-3.5 px-4 text-center font-bold text-base transition-all active:scale-95",
+                  "w-full p-4 rounded-xl border font-bold text-base transition-all duration-200 flex items-center justify-between text-left",
                   btnStyle
                 )}
               >
-                <span>{opt.de}</span>
-              </button>
+                <div className="flex items-center gap-2.5">
+                  <span className="w-5 h-5 rounded-md bg-slate-900 border border-slate-700/80 text-[10px] text-slate-400 flex items-center justify-center font-mono">
+                    {idx + 1}
+                  </span>
+                  <span>{opt.de}</span>
+                </div>
 
-              {/* Translate button (❓) */}
-              <button
-                type="button"
-                onClick={(e) => handleInspect(e, opt)}
-                className="px-2.5 bg-slate-50/80 border-l border-slate-200 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors flex items-center justify-center"
-                title={`Tra nghĩa "${opt.de}"`}
-              >
-                <HelpCircle size={15} />
+                <div className="flex items-center gap-1.5">
+                  {/* Tap-to-translate button */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleInspect(e, opt)}
+                    className="p-1 rounded-lg text-slate-500 hover:text-cyan-300 hover:bg-cyan-950/40 transition-colors"
+                    title={`Chạm để dịch nghĩa từ "${opt.de}"`}
+                  >
+                    <HelpCircle size={15} />
+                  </button>
+
+                  {isAnswered && isThisCorrect && (
+                    <CheckCircle2 size={18} className="text-emerald-400" />
+                  )}
+                  {isAnswered && isThisSelected && !isThisCorrect && (
+                    <XCircle size={18} className="text-rose-400" />
+                  )}
+                </div>
               </button>
             </div>
           );
         })}
       </div>
 
-      {/* Quick Word Glossary Card (ONLY appears when user taps ❓) */}
+      {/* Popover: Inspect Word Translation */}
       {inspectingWord && (
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 flex items-center justify-between gap-3 animate-in fade-in duration-200 shadow-md">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-base font-black text-blue-950">
-                {inspectingWord.de}
-              </span>
-              <button
-                onClick={() => handleSpeak(inspectingWord.de)}
-                className="text-blue-600 hover:text-blue-800 p-0.5"
-                title="Nghe phát âm"
-              >
-                <Volume2 size={16} />
-              </button>
-            </div>
-            <p className="text-sm font-semibold text-slate-800">
-              💬 Nghĩa:{" "}
-              {loadingTranslation ? (
-                <span className="inline-flex items-center gap-1 text-slate-400 font-normal">
-                  <Loader2 size={12} className="animate-spin" /> Đang dịch...
-                </span>
-              ) : (
-                <span className="text-blue-700 font-bold">{inspectingWord.vi || "Từ vựng tiếng Đức"}</span>
-              )}
-            </p>
+        <div className="bg-[#0c162e] border border-cyan-500/30 rounded-xl p-3 flex items-center justify-between gap-3 text-xs animate-in fade-in duration-150">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-cyan-300 text-sm">{inspectingWord.de}:</span>
+            <span className="text-slate-300">{inspectingWord.vi}</span>
+            {loadingTranslation && <Loader2 size={12} className="animate-spin text-cyan-400" />}
           </div>
-
           <button
             onClick={() => setInspectingWord(null)}
-            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white border border-blue-200 text-blue-700 hover:bg-blue-100/50 transition-colors"
+            className="text-slate-500 hover:text-white text-xs px-1"
           >
             Đóng
           </button>
         </div>
       )}
 
-      {/* Feedback box */}
+      {/* Feedback & Explanation Card */}
       {isAnswered && (
         <div
           className={cn(
-            "p-4 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm",
+            "p-5 rounded-2xl border space-y-3 animate-in fade-in zoom-in-95 duration-200",
             isCorrect
-              ? "bg-emerald-50 border-emerald-200 text-emerald-900"
-              : "bg-red-50 border-red-200 text-red-900"
+              ? "bg-emerald-950/30 border-emerald-500/30 text-emerald-200"
+              : "bg-rose-950/30 border-rose-500/30 text-rose-200"
           )}
         >
-          <div className="space-y-1">
-            <div className="flex items-center gap-1.5 font-bold">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
               {isCorrect ? (
                 <>
-                  <CheckCircle2 size={18} className="text-emerald-600" />
-                  <span>Chính xác! Giỏi lắm 🎉</span>
+                  <CheckCircle2 size={18} className="text-emerald-400" />
+                  <span className="font-bold text-sm text-emerald-300">Chính xác! Rất xuất sắc 🎉</span>
                 </>
               ) : (
                 <>
-                  <XCircle size={18} className="text-red-500" />
-                  <span>Chưa đúng rồi! Đáp án là &quot;{exercise.correctWord}&quot;</span>
+                  <XCircle size={18} className="text-rose-400" />
+                  <span className="font-bold text-sm text-rose-300">Chưa đúng rồi! Hãy xem gợi ý bên dưới</span>
                 </>
               )}
             </div>
-            {exercise.explanation && (
-              <p className="text-xs text-slate-600 flex items-start gap-1">
-                <Lightbulb size={13} className="text-amber-500 flex-shrink-0 mt-0.5" />
-                <span>{exercise.explanation}</span>
-              </p>
-            )}
+
+            <button
+              onClick={() => handleSpeak(exercise.sentenceWithBlank.replace("___", exercise.correctWord))}
+              className="p-1 rounded-full text-slate-400 hover:text-white transition-colors"
+              title="Nghe lại câu hoàn chỉnh"
+            >
+              <Volume2 size={16} />
+            </button>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            {!isCorrect ? (
+          <div className="text-xs space-y-1.5 text-slate-300 bg-[#070d19]/80 p-3.5 rounded-xl border border-slate-800">
+            <div className="flex items-start gap-2">
+              <Lightbulb size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-slate-200">Giải thích ngữ pháp:</p>
+                <p className="text-slate-400 mt-0.5">{exercise.explanation}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-1">
+            {!isCorrect && (
               <button
                 onClick={handleReset}
-                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white border border-red-200 hover:bg-red-100/50 text-red-700 text-xs font-semibold transition-colors"
+                className="px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition-colors"
               >
-                <RotateCcw size={14} /> Thử lại
+                <RotateCcw size={13} /> Thử lại
               </button>
-            ) : null}
+            )}
 
             <button
               onClick={onComplete}
-              className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors shadow-sm"
+              className="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 hover:from-cyan-400 hover:to-blue-500 flex items-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all"
             >
-              <span>Bước 2: Xếp câu</span>
+              <span>Tiếp tục Bước 2 (Xếp câu)</span>
               <ArrowRight size={14} />
             </button>
           </div>

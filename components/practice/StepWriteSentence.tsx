@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, XCircle, Volume2, ArrowRight, Loader2, Sparkles, HelpCircle } from "lucide-react";
+import { CheckCircle2, XCircle, Volume2, ArrowRight, Loader2, Sparkles, HelpCircle, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StepWriteSentenceProps {
@@ -77,6 +77,7 @@ export default function StepWriteSentence({
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = "de-DE";
+      utter.rate = 0.9;
       window.speechSynthesis.speak(utter);
     }
   };
@@ -90,134 +91,154 @@ export default function StepWriteSentence({
 
   return (
     <div className="space-y-6">
-      {/* Title & Badge */}
+      {/* Exercise Subtitle */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center justify-center">
+          <span className="w-6 h-6 rounded-lg bg-emerald-950/70 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-xs font-bold">
             3
           </span>
-          <h3 className="font-semibold text-slate-800 text-base">
-            Bước 3: Tự viết câu tiếng Đức (A1 Dễ)
+          <h3 className="text-sm font-bold text-slate-200">
+            Tự viết câu tiếng Đức (AI Phản biện ngữ pháp)
           </h3>
         </div>
-        <span className="text-xs text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full font-medium">
-          Áp dụng thực tế
+        <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-950/50 px-2.5 py-0.5 rounded-full border border-emerald-800/40">
+          Sáng tạo câu A1
         </span>
       </div>
 
-      {/* Target Vietnamese sentence */}
-      <div className="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-5 text-center space-y-1">
-        <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">
-          Hãy dịch câu sau sang tiếng Đức:
+      {/* Target Vietnamese Prompt */}
+      <div className="bg-[#080d19] border border-cyan-500/25 rounded-2xl p-6 text-center space-y-2 shadow-[0_0_20px_rgba(6,182,212,0.1)]">
+        <p className="text-xs text-slate-400">Hãy viết câu tiếng Đức cho ý sau:</p>
+        <p className="text-xl sm:text-2xl font-black text-cyan-200 tracking-tight">
+          &quot;{exercise.vietnameseSentence}&quot;
         </p>
-        <p className="text-xl sm:text-2xl font-bold text-slate-800">
-          &ldquo;{exercise.vietnameseSentence}&rdquo;
+        <p className="text-xs text-slate-500 pt-1">
+          Bắt buộc sử dụng từ khóa: <strong className="text-cyan-400 font-bold">{germanWord}</strong>
         </p>
       </div>
 
-      {/* Vocabulary Hints Bank */}
+      {/* Vocabulary Hints */}
       {exercise.hints && exercise.hints.length > 0 && (
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
-            <HelpCircle size={14} className="text-indigo-500" />
-            <span>Gợi ý từ vựng (chạm để chèn vào ô viết):</span>
-          </div>
+        <div className="space-y-2">
+          <p className="text-xs text-slate-400 px-1 flex items-center gap-1.5">
+            <HelpCircle size={13} className="text-cyan-400" />
+            <span>Từ khóa gợi ý (Chạm để chèn vào câu):</span>
+          </p>
           <div className="flex flex-wrap gap-2">
             {exercise.hints.map((hint, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => insertHint(hint.de)}
-                className="inline-flex items-center gap-1.5 text-xs bg-white border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 text-slate-700 px-2.5 py-1.5 rounded-lg shadow-sm transition-all"
-                title={`Chèn "${hint.de}"`}
+                className="px-3 py-1.5 rounded-xl bg-[#0d162c] hover:bg-[#122042] border border-slate-700/80 hover:border-cyan-400/60 text-xs text-slate-200 transition-all flex items-center gap-1.5 shadow-sm group"
+                title={`Nghĩa: ${hint.vi}`}
               >
-                <strong className="text-indigo-700 font-semibold">{hint.de}</strong>
-                <span className="text-slate-400">({hint.vi})</span>
+                <span className="font-bold text-cyan-300 group-hover:text-cyan-200">{hint.de}</span>
+                <span className="text-[10px] text-slate-500 font-normal">({hint.vi})</span>
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* Input Textarea */}
+      {/* Writing Textarea */}
       <div className="space-y-3">
-        <textarea
-          value={studentAnswer}
-          onChange={(e) => {
-            setStudentAnswer(e.target.value);
-            setResult(null);
-          }}
-          placeholder="Viết câu tiếng Đức của bạn ở đây (ví dụ: Ich...)..."
-          rows={3}
-          className="w-full bg-white text-slate-900 font-medium placeholder:text-slate-400 border border-slate-300 focus:border-indigo-500 rounded-2xl p-4 text-base focus:outline-none focus:ring-4 focus:ring-indigo-100 transition-all resize-none shadow-sm"
-        />
+        <div className="relative">
+          <textarea
+            value={studentAnswer}
+            onChange={(e) => setStudentAnswer(e.target.value)}
+            rows={3}
+            placeholder="Gõ câu tiếng Đức của bạn ở đây... (Ví dụ: Ich höre jetzt auf.)"
+            className="w-full p-4 rounded-2xl bg-[#070c18] border border-slate-800 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-white font-medium text-base sm:text-lg placeholder:text-slate-600 transition-all shadow-inner focus:outline-none"
+          />
+        </div>
 
-        <button
-          onClick={handleCheck}
-          disabled={loading || !studentAnswer.trim()}
-          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold text-sm transition-all shadow-sm"
-        >
-          {loading ? (
-            <Loader2 size={16} className="animate-spin" />
-          ) : (
-            <Sparkles size={16} />
-          )}
-          <span>{loading ? "AI đang chấm và nhận xét..." : "Chấm điểm & Nhận xét với AI ✨"}</span>
-        </button>
-      </div>
-
-      {/* AI Feedback */}
-      {result && (
-        <div
-          className={cn(
-            "p-5 rounded-2xl border space-y-3 transition-all",
-            result.correct
-              ? "bg-emerald-50 border-emerald-200 text-emerald-950"
-              : "bg-amber-50 border-amber-200 text-amber-950"
-          )}
-        >
-          <div className="flex items-center gap-2 font-bold text-base">
-            {result.correct ? (
+        <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+          <span>{studentAnswer.trim().split(/\s+/).filter(Boolean).length} từ</span>
+          <button
+            type="button"
+            onClick={handleCheck}
+            disabled={loading || !studentAnswer.trim()}
+            className="px-5 py-2.5 rounded-xl font-extrabold bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-40 flex items-center gap-2 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all"
+          >
+            {loading ? (
               <>
-                <CheckCircle2 size={20} className="text-emerald-600" />
-                <span className="text-emerald-800">Làm rất tốt! Câu chuẩn xác 🎉</span>
+                <Loader2 size={15} className="animate-spin text-slate-950" />
+                <span>AI đang chấm điểm...</span>
               </>
             ) : (
               <>
-                <XCircle size={20} className="text-amber-600" />
-                <span className="text-amber-800">Cố lên! Cần chỉnh sửa một chút:</span>
+                <Sparkles size={15} className="fill-slate-950" />
+                <span>AI Đánh Giá Câu</span>
               </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* AI Evaluation Feedback Card */}
+      {result && (
+        <div
+          className={cn(
+            "p-5 rounded-2xl border space-y-4 animate-in fade-in zoom-in-95 duration-200",
+            result.correct
+              ? "bg-emerald-950/30 border-emerald-500/30 text-emerald-200"
+              : "bg-rose-950/30 border-rose-500/30 text-rose-200"
+          )}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {result.correct ? (
+                <>
+                  <CheckCircle2 size={20} className="text-emerald-400" />
+                  <span className="font-extrabold text-sm text-emerald-300">
+                    Rất tuyệt vời! Câu chuẩn A1 🎉
+                  </span>
+                </>
+              ) : (
+                <>
+                  <XCircle size={20} className="text-rose-400" />
+                  <span className="font-extrabold text-sm text-rose-300">
+                    Cần chỉnh sửa một chút! Hãy xem góp ý bên dưới
+                  </span>
+                </>
+              )}
+            </div>
+
+            <button
+              onClick={() => handleSpeak(studentAnswer)}
+              className="p-1.5 rounded-full text-slate-400 hover:text-white transition-colors"
+              title="Nghe câu bạn vừa viết"
+            >
+              <Volume2 size={16} />
+            </button>
+          </div>
+
+          <div className="bg-[#070d19]/90 border border-slate-800 rounded-xl p-4 space-y-2 text-xs">
+            <p className="text-slate-300 leading-relaxed font-medium">
+              {result.feedback}
+            </p>
+
+            {result.suggestion && (
+              <div className="pt-2 border-t border-slate-800 flex items-start gap-2">
+                <Lightbulb size={14} className="text-cyan-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-slate-400">Câu gợi ý chuẩn từ giáo viên bản xứ:</p>
+                  <p className="text-cyan-300 font-bold text-sm mt-0.5">
+                    {result.suggestion}
+                  </p>
+                </div>
+              </div>
             )}
           </div>
 
-          <p className="text-sm text-slate-700 leading-relaxed bg-white/80 p-3 rounded-xl border border-black/5">
-            {result.feedback}
-          </p>
-
-          {result.suggestion && (
-            <div className="flex items-center justify-between gap-2 bg-white/90 p-3 rounded-xl border border-black/5">
-              <div className="space-y-0.5">
-                <p className="text-xs text-slate-500 font-semibold">💡 Câu tiếng Đức chuẩn mẫu:</p>
-                <p className="text-sm font-bold text-indigo-700">{result.suggestion}</p>
-              </div>
-              <button
-                onClick={() => handleSpeak(result.suggestion)}
-                className="p-2 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors"
-                title="Nghe phát âm"
-              >
-                <Volume2 size={18} />
-              </button>
-            </div>
-          )}
-
-          {/* Complete button */}
-          <div className="pt-2 flex justify-end">
+          <div className="flex justify-end pt-1">
             <button
               onClick={onComplete}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-all shadow-md active:scale-95"
+              className="px-5 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 hover:from-cyan-400 hover:to-blue-500 flex items-center gap-2 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all"
             >
-              <span>Hoàn thành từ này</span>
-              <ArrowRight size={16} />
+              <span>Hoàn tất từ này &amp; Chuyển tiếp</span>
+              <ArrowRight size={14} />
             </button>
           </div>
         </div>

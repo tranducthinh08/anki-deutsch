@@ -38,43 +38,50 @@ export default function WordDrawer({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-md bg-[#0a1122]/95 backdrop-blur-2xl border-l border-sky-500/20 h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
         {/* Header */}
-        <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BookOpen size={18} className="text-indigo-600" />
-            <h2 className="font-bold text-slate-800 text-base">
-              Danh sách từ ({completedCount}/{cards.length} đã xong)
-            </h2>
+        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+              <BookOpen size={16} />
+            </div>
+            <div>
+              <h2 className="font-bold text-white text-sm">
+                Danh sách từ vựng hôm nay
+              </h2>
+              <p className="text-[11px] text-cyan-400 font-medium">
+                {completedCount} / {cards.length} từ đã hoàn thành
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
         {/* Search */}
-        <div className="p-3 border-b border-slate-100 bg-slate-50">
+        <div className="p-3 border-b border-slate-800/80 bg-[#070d19]/80">
           <div className="relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-cyan-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Tìm từ tiếng Đức hoặc nghĩa..."
-              className="w-full pl-9 pr-3 py-1.5 text-xs bg-white text-slate-900 placeholder:text-slate-400 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              placeholder="Tìm từ tiếng Đức hoặc nghĩa tiếng Việt..."
+              className="w-full pl-9 pr-3 py-2 text-xs bg-[#060b17] text-white placeholder:text-slate-500 border border-slate-700/80 rounded-xl focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all shadow-inner"
             />
           </div>
         </div>
 
         {/* Word items */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-1.5 divide-y divide-slate-50">
+        <div className="flex-1 overflow-y-auto p-3 space-y-2">
           {filteredCards.length === 0 ? (
-            <div className="text-center py-10 text-slate-400 text-xs">
-              Không tìm thấy từ nào phù hợp.
+            <div className="text-center py-12 text-slate-500 text-xs">
+              Không tìm thấy từ vựng nào phù hợp.
             </div>
           ) : (
             filteredCards.map((card) => {
@@ -97,34 +104,36 @@ export default function WordDrawer({
                   className={cn(
                     "w-full text-left p-3 rounded-xl flex items-center justify-between gap-3 transition-all",
                     isCurrent
-                      ? "bg-indigo-50 border-2 border-indigo-500/50 shadow-sm"
-                      : "hover:bg-slate-50 border border-transparent"
+                      ? "bg-cyan-500/15 border-2 border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+                      : "bg-[#0c1427]/60 hover:bg-[#101b33] border border-slate-800/70"
                   )}
                 >
                   <div className="min-w-0 flex-1">
                     <p
                       className={cn(
                         "text-sm font-bold truncate",
-                        isCurrent ? "text-indigo-700" : "text-slate-800"
+                        isCurrent ? "text-cyan-300" : "text-slate-200"
                       )}
                     >
                       {card.front}
                     </p>
-                    <p className="text-xs text-slate-400 truncate">{card.back || "Chưa có nghĩa"}</p>
+                    <p className="text-xs text-slate-400 truncate mt-0.5">
+                      {card.back || "Chưa có nghĩa"}
+                    </p>
                   </div>
 
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     {isDone ? (
-                      <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                        <CheckCircle2 size={12} /> Hoàn thành
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                        <CheckCircle2 size={11} /> Xong
                       </span>
                     ) : stepsDoneCount > 0 ? (
-                      <span className="flex items-center gap-1 text-[11px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">
-                        <Clock size={11} /> {stepsDoneCount}/3 bước
+                      <span className="flex items-center gap-1 text-[10px] font-semibold text-cyan-300 bg-cyan-950/60 px-2 py-0.5 rounded-full border border-cyan-500/30">
+                        <Clock size={10} /> {stepsDoneCount}/3
                       </span>
                     ) : (
-                      <span className="text-[11px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
-                        Chưa luyện
+                      <span className="text-[10px] text-slate-500 bg-slate-900 px-2 py-0.5 rounded-full border border-slate-800">
+                        Chưa
                       </span>
                     )}
                   </div>

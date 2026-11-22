@@ -56,8 +56,8 @@ export default function PracticeSession({
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showMeaning, setShowMeaning] = useState(false);
   const [isAllDone, setIsAllDone] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
-  // Load persistent progress from localStorage
   useEffect(() => {
     setDayProgress(loadTodayProgress());
   }, []);
@@ -71,7 +71,6 @@ export default function PracticeSession({
     completed: false,
   };
 
-  // Fetch or retrieve practice package for current card
   const loadPackageForCard = useCallback(
     async (card: AnkiCard) => {
       if (cache[card.cardId]) return;
@@ -107,7 +106,6 @@ export default function PracticeSession({
     }
   }, [currentIndex, currentCard, loadPackageForCard]);
 
-  // Handle saving individual step completion
   const handleStepSuccess = (step: 1 | 2 | 3) => {
     if (!currentCard) return;
     const updated = saveWordStep(currentCard.front, step, step === 3);
@@ -140,6 +138,10 @@ export default function PracticeSession({
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = "de-DE";
+      utter.rate = 0.9;
+      utter.onstart = () => setIsPlayingAudio(true);
+      utter.onend = () => setIsPlayingAudio(false);
+      utter.onerror = () => setIsPlayingAudio(false);
       window.speechSynthesis.speak(utter);
     }
   };
@@ -158,7 +160,7 @@ export default function PracticeSession({
   ).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-blue-50/40 pb-16">
+    <div className="min-h-screen bg-[#060913] bg-cyber-grid text-slate-100 pb-16 selection:bg-cyan-500 selection:text-slate-950">
       {/* Top Header */}
       <PracticeHeader
         currentIndex={currentIndex}
@@ -180,108 +182,115 @@ export default function PracticeSession({
         ) : (
           <>
             {/* Word Focus Card */}
-            <div className="bg-white rounded-3xl p-6 shadow-md border border-slate-100/80 space-y-4">
+            <div className="relative overflow-hidden bg-[#0c1427]/85 backdrop-blur-xl border border-sky-500/20 rounded-3xl p-6 shadow-2xl space-y-5">
+              {/* Top ambient highlight */}
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
+
               <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl sm:text-3xl font-black text-white tracking-tight">
                       {currentCard.front}
                     </span>
                     <button
                       onClick={() => handleSpeak(currentCard.front)}
-                      className="p-1.5 rounded-full text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-                      title="Nghe phát âm"
+                      className={`p-1.5 rounded-full border transition-all ${
+                        isPlayingAudio
+                          ? "bg-cyan-500/25 border-cyan-400 text-cyan-300 scale-110 shadow-[0_0_12px_rgba(6,182,212,0.5)]"
+                          : "bg-slate-900 border-slate-700 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/50"
+                      }`}
+                      title="Phát âm tiếng Đức"
                     >
-                      <Volume2 size={20} />
+                      <Volume2 size={18} />
                     </button>
                   </div>
 
                   {/* Toggle meaning */}
                   <div className="flex items-center gap-2 pt-0.5">
                     {showMeaning ? (
-                      <p className="text-sm font-medium text-slate-600 animate-in fade-in">
-                        {currentCard.back || "(Chưa có nghĩa tiếng Việt)"}
-                      </p>
+                      <div className="bg-[#070d19] border border-cyan-500/30 px-3 py-1.5 rounded-xl flex items-center gap-2 animate-in fade-in">
+                        <span className="text-xs font-semibold text-cyan-200">
+                          {currentCard.back || "(Chưa có nghĩa tiếng Việt)"}
+                        </span>
+                        <button
+                          onClick={() => setShowMeaning(false)}
+                          className="text-slate-500 hover:text-slate-300 p-0.5"
+                          title="Ẩn nghĩa"
+                        >
+                          <EyeOff size={13} />
+                        </button>
+                      </div>
                     ) : (
                       <button
                         onClick={() => setShowMeaning(true)}
-                        className="text-xs text-indigo-600 hover:text-indigo-700 flex items-center gap-1 font-semibold"
+                        className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold transition-colors"
                       >
                         <Eye size={13} />
                         <span>Xem nghĩa tiếng Việt</span>
-                      </button>
-                    )}
-                    {showMeaning && (
-                      <button
-                        onClick={() => setShowMeaning(false)}
-                        className="text-slate-400 hover:text-slate-600 p-0.5"
-                        title="Ẩn nghĩa"
-                      >
-                        <EyeOff size={13} />
                       </button>
                     )}
                   </div>
                 </div>
 
                 <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                  <span className="text-[11px] font-semibold bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full border border-indigo-100">
-                    {currentCard.deckName.split("::").pop()}
+                  <span className="text-[10px] font-bold bg-cyan-950/60 text-cyan-300 px-2.5 py-1 rounded-full border border-cyan-800/50">
+                    {currentCard.deckName.split("::").pop() || "A1"}
                   </span>
                   {currentProgress.completed && (
-                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/70 px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
                       <Check size={11} /> Đã hoàn thành
                     </span>
                   )}
                 </div>
               </div>
 
-              {/* Step indicator tabs with live checkmarks */}
-              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100">
+              {/* Step indicator tabs */}
+              <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-800/80">
                 <button
                   onClick={() => setCurrentStep(1)}
                   className={cn(
-                    "py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5",
+                    "py-2 px-3 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 border",
                     currentStep === 1
-                      ? "bg-blue-600 text-white shadow-sm"
+                      ? "bg-cyan-500/25 text-cyan-200 border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
                       : currentProgress.step1
-                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                      : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+                      ? "bg-emerald-950/50 text-emerald-300 border-emerald-500/30"
+                      : "bg-[#070d19] text-slate-400 border-slate-800 hover:text-slate-200"
                   )}
                 >
-                  {currentProgress.step1 && <Check size={12} className={currentStep === 1 ? "text-white" : "text-emerald-600"} />}
+                  {currentProgress.step1 && <Check size={12} className="text-emerald-400" />}
                   <span>1. Điền từ</span>
                 </button>
 
                 <button
                   onClick={() => setCurrentStep(2)}
                   className={cn(
-                    "py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5",
+                    "py-2 px-3 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 border",
                     currentStep === 2
-                      ? "bg-purple-600 text-white shadow-sm"
+                      ? "bg-sky-500/25 text-sky-200 border-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.3)]"
                       : currentProgress.step2
-                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                      : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+                      ? "bg-emerald-950/50 text-emerald-300 border-emerald-500/30"
+                      : "bg-[#070d19] text-slate-400 border-slate-800 hover:text-slate-200"
                   )}
                 >
-                  {currentProgress.step2 && <Check size={12} className={currentStep === 2 ? "text-white" : "text-emerald-600"} />}
+                  {currentProgress.step2 && <Check size={12} className="text-emerald-400" />}
                   <span>2. Xếp câu</span>
                 </button>
 
                 <button
                   onClick={() => setCurrentStep(3)}
                   className={cn(
-                    "py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5",
+                    "py-2 px-3 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 border",
                     currentStep === 3
-                      ? "bg-emerald-600 text-white shadow-sm"
+                      ? "bg-blue-500/25 text-blue-200 border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]"
                       : currentProgress.step3
-                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                      : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+                      ? "bg-emerald-950/50 text-emerald-300 border-emerald-500/30"
+                      : "bg-[#070d19] text-slate-400 border-slate-800 hover:text-slate-200"
                   )}
                 >
                   {currentProgress.step3 ? (
-                    <Check size={12} className={currentStep === 3 ? "text-white" : "text-emerald-600"} />
+                    <Check size={12} className="text-emerald-400" />
                   ) : (
-                    <Sparkles size={12} />
+                    <Sparkles size={12} className="text-cyan-400" />
                   )}
                   <span>3. Viết câu</span>
                 </button>
@@ -289,11 +298,13 @@ export default function PracticeSession({
             </div>
 
             {/* Exercise Content Area */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-md border border-slate-100/80 min-h-[340px] flex flex-col justify-center">
+            <div className="bg-[#0c1427]/80 backdrop-blur-xl border border-sky-500/15 rounded-3xl p-6 sm:p-8 shadow-2xl min-h-[340px] flex flex-col justify-center">
               {loading ? (
                 <div className="py-16 flex flex-col items-center justify-center text-slate-400 space-y-3">
-                  <Loader2 size={32} className="animate-spin text-indigo-500" />
-                  <p className="text-sm font-medium">Đang chuẩn bị bài tập A1 cho từ &quot;{currentCard.front}&quot;...</p>
+                  <Loader2 size={34} className="animate-spin text-cyan-400" />
+                  <p className="text-xs font-medium text-slate-300">
+                    Đang khởi tạo bài tập A1 cho &quot;{currentCard.front}&quot;...
+                  </p>
                 </div>
               ) : pkg ? (
                 <div>
@@ -325,10 +336,10 @@ export default function PracticeSession({
                 </div>
               ) : (
                 <div className="text-center py-10 space-y-3">
-                  <p className="text-sm text-red-500">Không tải được bài tập cho từ này.</p>
+                  <p className="text-xs text-rose-400">Không tải được bài tập cho từ này.</p>
                   <button
                     onClick={() => loadPackageForCard(currentCard)}
-                    className="text-xs px-4 py-2 bg-indigo-50 text-indigo-700 font-semibold rounded-lg"
+                    className="text-xs px-4 py-2 bg-cyan-950/50 text-cyan-300 border border-cyan-500/30 font-semibold rounded-xl"
                   >
                     Thử tải lại
                   </button>
@@ -337,18 +348,18 @@ export default function PracticeSession({
             </div>
 
             {/* Bottom Word Navigator */}
-            <div className="flex items-center justify-between text-xs font-medium text-slate-500 px-2">
+            <div className="flex items-center justify-between text-xs font-medium text-slate-400 px-2">
               <button
                 onClick={handlePrevWord}
                 disabled={currentIndex === 0}
-                className="flex items-center gap-1 hover:text-slate-800 disabled:opacity-30 p-1"
+                className="flex items-center gap-1 hover:text-white disabled:opacity-30 p-1 transition-colors"
               >
                 <ChevronLeft size={16} /> Từ trước
               </button>
 
               <button
                 onClick={handleNextWord}
-                className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-semibold p-1"
+                className="flex items-center gap-1 text-cyan-400 hover:text-cyan-300 font-bold p-1 transition-colors"
               >
                 <span>{currentIndex === cards.length - 1 ? "Xem kết quả" : "Bỏ qua / Từ tiếp theo"}</span>
                 <ChevronRight size={16} />
