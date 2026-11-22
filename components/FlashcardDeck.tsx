@@ -80,14 +80,24 @@ export default function FlashcardDeck({ cards }: FlashcardDeckProps) {
       <div
         className="relative h-80 w-full cursor-pointer perspective-1000 select-none"
         onClick={handleFlip}
+        style={{ perspective: "1000px" }}
       >
         <div
-          className={`relative w-full h-full duration-500 transform-style-preserve-3d transition-transform rounded-3xl ${
-            isFlipped ? "rotate-y-180" : ""
-          }`}
+          className="relative w-full h-full duration-500 transition-transform rounded-3xl"
+          style={{
+            transformStyle: "preserve-3d",
+            WebkitTransformStyle: "preserve-3d",
+            transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+          }}
         >
           {/* FRONT SIDE (German Word) */}
-          <div className="absolute inset-0 w-full h-full backface-hidden bg-gradient-to-br from-[#161a29] via-[#111420] to-[#0c0e17] border-2 border-amber-500/30 rounded-3xl p-8 flex flex-col justify-between shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
+          <div
+            className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#161a29] via-[#111420] to-[#0c0e17] border-2 border-amber-500/30 rounded-3xl p-8 flex flex-col justify-between shadow-[0_10px_40px_rgba(0,0,0,0.6)]"
+            style={{
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+            }}
+          >
             <div className="flex items-center justify-between text-xs">
               <span className="font-mono text-amber-400 font-bold bg-amber-950/60 px-3 py-1 rounded-full border border-amber-500/30">
                 Thẻ {index + 1} / {cards.length}
@@ -122,7 +132,14 @@ export default function FlashcardDeck({ cards }: FlashcardDeckProps) {
           </div>
 
           {/* BACK SIDE (Vietnamese Meaning) */}
-          <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 bg-gradient-to-br from-[#1c1829] via-[#141220] to-[#0d0b17] border-2 border-emerald-500/35 rounded-3xl p-8 flex flex-col justify-between shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
+          <div
+            className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#1c1829] via-[#141220] to-[#0d0b17] border-2 border-emerald-500/35 rounded-3xl p-8 flex flex-col justify-between shadow-[0_10px_40px_rgba(0,0,0,0.6)]"
+            style={{
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+              transform: "rotateY(180deg)",
+            }}
+          >
             <div className="flex items-center justify-between text-xs">
               <span className="font-mono text-emerald-400 font-bold bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-500/30">
                 Thẻ {index + 1} / {cards.length}
