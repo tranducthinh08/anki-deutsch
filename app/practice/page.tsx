@@ -37,10 +37,10 @@ function PracticeContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#060913] bg-cyber-grid flex flex-col items-center justify-center p-4 text-slate-400">
+      <div className="min-h-screen bg-[#090a0f] bg-amber-mesh flex flex-col items-center justify-center p-4 text-slate-400">
         <div className="relative">
-          <Loader2 size={38} className="animate-spin text-cyan-400 mb-3" />
-          <span className="absolute inset-0 rounded-full blur-md bg-cyan-400/30 -z-10" />
+          <Loader2 size={40} className="animate-spin text-amber-400 mb-3" />
+          <span className="absolute inset-0 rounded-full blur-md bg-amber-400/30 -z-10" />
         </div>
         <p className="text-sm font-bold text-slate-200">Đang chuẩn bị phiên luyện tập A1...</p>
         <p className="text-xs text-slate-500 mt-1">Đồng bộ từ vựng từ AnkiConnect</p>
@@ -50,8 +50,8 @@ function PracticeContent() {
 
   if (error || cards.length === 0) {
     return (
-      <div className="min-h-screen bg-[#060913] bg-cyber-grid flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-[#0c1427]/90 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-sky-500/20 text-center space-y-4 shadow-2xl">
+      <div className="min-h-screen bg-[#090a0f] bg-amber-mesh flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[#121524]/90 backdrop-blur-2xl p-6 sm:p-8 rounded-3xl border border-amber-500/25 text-center space-y-4 shadow-2xl">
           <div className="w-14 h-14 rounded-2xl bg-amber-950/70 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
             <AlertCircle size={28} />
           </div>
@@ -63,7 +63,7 @@ function PracticeContent() {
           </p>
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 text-xs font-extrabold rounded-xl hover:from-cyan-400 hover:to-blue-500 transition-all shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-slate-950 text-xs font-black rounded-2xl hover:from-amber-300 hover:to-yellow-400 transition-all shadow-[0_0_20px_rgba(245,158,11,0.35)]"
           >
             <ArrowLeft size={14} /> Về Dashboard
           </Link>
@@ -85,8 +85,8 @@ export default function PracticePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#060913] flex items-center justify-center">
-          <Loader2 size={36} className="animate-spin text-cyan-400" />
+        <div className="min-h-screen bg-[#090a0f] flex items-center justify-center">
+          <Loader2 size={36} className="animate-spin text-amber-400" />
         </div>
       }
     >

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import WordList from "@/components/WordList";
+import SpotlightCard from "@/components/SpotlightCard";
 import { AnkiCard } from "@/lib/anki";
 import { loadTodayProgress, normalizeWordKey, DayProgress } from "@/lib/progress";
 import {
@@ -15,8 +16,9 @@ import {
   ArrowRight,
   Zap,
   Target,
-  Flame,
   Award,
+  Layers,
+  Compass,
 } from "lucide-react";
 
 type Status = "idle" | "loading" | "success" | "error";
@@ -80,23 +82,23 @@ export default function HomePage() {
   const completionPercent = cards.length > 0 ? Math.round((completedCount / cards.length) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-[#060913] bg-cyber-grid text-slate-100 flex flex-col justify-between selection:bg-cyan-500 selection:text-slate-950">
+    <div className="min-h-screen bg-[#090a0f] bg-amber-mesh text-slate-100 flex flex-col justify-between selection:bg-amber-400 selection:text-slate-950">
       <div>
-        {/* Floating Cyber Header */}
-        <header className="sticky top-0 z-30 bg-[#080d19]/80 backdrop-blur-xl border-b border-sky-500/15">
-          <div className="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between gap-4">
+        {/* Floating Top Island Header */}
+        <header className="sticky top-3 z-30 px-4">
+          <div className="max-w-6xl mx-auto bg-[#121524]/90 backdrop-blur-2xl border border-amber-500/25 rounded-3xl px-5 py-3.5 shadow-[0_10px_35px_rgba(0,0,0,0.5)] flex items-center justify-between gap-4">
             {/* Brand Logo */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-lg shadow-[0_0_15px_rgba(6,182,212,0.4)] border border-cyan-300/40">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 flex items-center justify-center text-lg shadow-[0_0_20px_rgba(245,158,11,0.4)] border border-amber-300/50">
                 🇩🇪
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-lg font-black tracking-tight text-white">
-                    DEUTSCH<span className="text-cyan-400">FLOW</span>
+                    DEUTSCH<span className="text-amber-400">FLOW</span>
                   </h1>
-                  <span className="text-[10px] font-bold text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-500/30">
-                    A1 ENGINE
+                  <span className="text-[10px] font-extrabold text-amber-300 bg-amber-950/70 px-2 py-0.5 rounded-full border border-amber-500/30">
+                    BAUHAUS GOLD
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 hidden sm:block">{today}</p>
@@ -106,16 +108,16 @@ export default function HomePage() {
             {/* Right Status & Refresh */}
             <div className="flex items-center gap-3">
               {/* Anki connection badge */}
-              <div className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full bg-[#0c1427] border border-slate-800">
+              <div className="flex items-center gap-1.5 text-xs px-3 py-1 rounded-full bg-[#0a0d17] border border-slate-800">
                 {ankiOnline === true ? (
                   <>
-                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse shadow-[0_0_8px_#22d3ee]" />
-                    <span className="text-cyan-300 font-semibold text-[11px]">Anki Live</span>
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
+                    <span className="text-emerald-300 font-bold text-[11px]">Anki Live</span>
                   </>
                 ) : ankiOnline === false ? (
                   <>
                     <span className="w-2 h-2 rounded-full bg-rose-500" />
-                    <span className="text-rose-400 font-semibold text-[11px]">Anki Offline</span>
+                    <span className="text-rose-400 font-bold text-[11px]">Anki Offline</span>
                   </>
                 ) : (
                   <span className="text-slate-500 text-[11px]">Đang kiểm tra...</span>
@@ -126,7 +128,7 @@ export default function HomePage() {
               <button
                 onClick={fetchTodayCards}
                 disabled={status === "loading"}
-                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-semibold transition-all shadow-[0_0_12px_rgba(6,182,212,0.15)] disabled:opacity-40"
+                className="flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 font-bold transition-all shadow-[0_0_15px_rgba(245,158,11,0.2)] disabled:opacity-40"
               >
                 <RefreshCw size={13} className={status === "loading" ? "animate-spin" : ""} />
                 <span className="hidden sm:inline">Làm mới</span>
@@ -137,90 +139,94 @@ export default function HomePage() {
 
         {/* Main Content */}
         <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-          {/* Command Center Hero Dashboard */}
+          {/* Bento Box Grid Architecture */}
           {status === "success" && cards.length > 0 && (
-            <div className="relative overflow-hidden bg-gradient-to-br from-[#0c162e] via-[#091326] to-[#080d19] border border-cyan-500/30 rounded-3xl p-6 sm:p-8 shadow-[0_10px_40px_-10px_rgba(6,182,212,0.25)] space-y-6">
-              {/* Background ambient spotlight */}
-              <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+              {/* Bento 1: Primary Command Center (Spans 2 columns) */}
+              <div className="lg:col-span-2 relative overflow-hidden bg-gradient-to-br from-[#161a29] via-[#111420] to-[#0c0e17] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-[0_10px_40px_rgba(0,0,0,0.5)] flex flex-col justify-between space-y-6">
+                {/* Background ambient gold ray */}
+                <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
-                {/* Left Description */}
-                <div className="space-y-3 max-w-xl">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/70 text-cyan-300 border border-cyan-500/30 text-xs font-bold">
-                    <Sparkles size={13} className="text-cyan-400" />
-                    <span>Lộ trình Luyện Viết & Phản Xạ A1 Tự Động</span>
+                <div className="space-y-4 relative z-10">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-950/70 text-amber-300 border border-amber-500/30 text-xs font-bold">
+                    <Sparkles size={13} className="text-amber-400" />
+                    <span>Lộ trình Luyện Viết & Tư Duy Tiếng Đức A1</span>
                   </div>
 
-                  <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white leading-tight">
-                    Luyện tập sâu từ vựng hôm nay
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white leading-tight">
+                    Làm chủ <span className="text-amber-400">{cards.length} từ vựng</span> hôm nay qua 3 bước
                   </h2>
 
-                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    Hệ thống tự động đồng bộ <strong className="text-cyan-300">{cards.length} từ vựng</strong> bạn vừa ôn trong Anki và phân giải thành 3 bài tập thực hành: <span className="text-slate-100 font-medium">Điền từ ngữ cảnh ➔ Sắp xếp câu hoàn chỉnh ➔ AI Đánh giá câu tự sáng tác</span>.
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-xl">
+                    Từ vựng chỉ thực sự thành của bạn khi bạn dùng nó để viết câu. Hệ thống tự động phân tách từ vựng thành chuỗi bài tập tương tác tăng dần độ khó.
                   </p>
+
+                  {/* 3 Steps Mini Flowchart */}
+                  <div className="grid grid-cols-3 gap-2.5 pt-2">
+                    <div className="bg-[#0e111d] border border-slate-800 rounded-2xl p-3 text-center">
+                      <span className="w-5 h-5 rounded-full bg-amber-950 text-amber-400 border border-amber-500/30 text-[10px] font-bold inline-flex items-center justify-center mb-1">
+                        1
+                      </span>
+                      <p className="text-xs font-bold text-slate-200">Điền từ ngữ cảnh</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">Nhận diện mẫu câu</p>
+                    </div>
+
+                    <div className="bg-[#0e111d] border border-slate-800 rounded-2xl p-3 text-center">
+                      <span className="w-5 h-5 rounded-full bg-amber-950 text-amber-400 border border-amber-500/30 text-[10px] font-bold inline-flex items-center justify-center mb-1">
+                        2
+                      </span>
+                      <p className="text-xs font-bold text-slate-200">Xếp câu cú pháp</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">Quy tắc V2 chuẩn</p>
+                    </div>
+
+                    <div className="bg-[#0e111d] border border-slate-800 rounded-2xl p-3 text-center">
+                      <span className="w-5 h-5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold inline-flex items-center justify-center mb-1">
+                        3
+                      </span>
+                      <p className="text-xs font-bold text-slate-200">Viết câu cùng AI</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">Phản xạ bản xứ</p>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Right Action Hub */}
-                <div className="w-full lg:w-auto flex flex-col sm:flex-row lg:flex-col gap-3 flex-shrink-0">
+                {/* Primary Workout CTA */}
+                <div className="pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-amber-950/60 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                      <Award size={20} />
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-slate-400">Tiến độ hôm nay</p>
+                      <p className="text-sm font-bold text-white">
+                        {completedCount} / {cards.length} từ đã hoàn thành ({completionPercent}%)
+                      </p>
+                    </div>
+                  </div>
+
                   <Link
                     href="/practice"
-                    className="group relative inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 text-sm font-extrabold shadow-[0_0_25px_rgba(6,182,212,0.4)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-center"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 text-sm font-black shadow-[0_0_30px_rgba(245,158,11,0.45)] transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-center"
                   >
                     <Zap size={18} className="fill-slate-950" />
-                    <span>BẮT ĐẦU WORKOUT ({cards.length} TỪ)</span>
-                    <ArrowRight size={17} className="group-hover:translate-x-1 transition-transform" />
+                    <span>BẮT ĐẦU BUỔI LUYỆN TẬP</span>
+                    <ArrowRight size={17} />
                   </Link>
                 </div>
               </div>
 
-              {/* Progress & Stats Strip */}
-              <div className="pt-4 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-[#060b17]/80 rounded-2xl p-4 border border-slate-800 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-cyan-950/50 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                    <BookOpen size={18} />
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-slate-400">Đã học trong Anki</p>
-                    <p className="text-lg font-bold text-white">{cards.length} từ</p>
-                  </div>
-                </div>
-
-                <div className="bg-[#060b17]/80 rounded-2xl p-4 border border-slate-800 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-950/50 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                    <Award size={18} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[11px] text-slate-400">Đã hoàn thành</p>
-                      <span className="text-xs font-bold text-emerald-400">{completionPercent}%</span>
-                    </div>
-                    <p className="text-lg font-bold text-white">
-                      {completedCount} <span className="text-xs text-slate-400 font-normal">/ {cards.length} từ</span>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-[#060b17]/80 rounded-2xl p-4 border border-slate-800 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-950/50 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-                    <Target size={18} />
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-slate-400">Cập nhật gần nhất</p>
-                    <p className="text-sm font-semibold text-slate-200">
-                      {lastFetched ? formatTime(lastFetched) : "Chưa có"}
-                    </p>
-                  </div>
-                </div>
+              {/* Bento 2: Spotlight Word Widget (1 column) */}
+              <div className="lg:col-span-1">
+                <SpotlightCard cards={cards} />
               </div>
             </div>
           )}
 
           {/* Loading State */}
           {(status === "loading" || status === "idle") && (
-            <div className="bg-[#0c1427]/60 border border-sky-500/20 rounded-3xl py-24 flex flex-col items-center justify-center text-slate-400 space-y-4 shadow-2xl">
+            <div className="bg-[#121524]/60 border border-amber-500/20 rounded-3xl py-24 flex flex-col items-center justify-center text-slate-400 space-y-4 shadow-2xl">
               <div className="relative">
-                <RefreshCw size={42} className="animate-spin text-cyan-400" />
-                <span className="absolute inset-0 rounded-full blur-md bg-cyan-400/30 -z-10" />
+                <RefreshCw size={44} className="animate-spin text-amber-400" />
+                <span className="absolute inset-0 rounded-full blur-md bg-amber-400/30 -z-10" />
               </div>
               <div className="text-center space-y-1">
                 <p className="font-bold text-white text-base">Đang kết nối Anki Desktop...</p>
@@ -240,35 +246,35 @@ export default function HomePage() {
                 <p className="text-xs text-rose-300">{errorMsg}</p>
               </div>
 
-              <div className="text-left bg-[#070d19] rounded-2xl p-4 border border-slate-800 text-xs text-slate-300 space-y-2">
-                <p className="font-bold text-cyan-300 mb-1">Kiểm tra nhanh:</p>
+              <div className="text-left bg-[#0c0f18] rounded-2xl p-4 border border-slate-800 text-xs text-slate-300 space-y-2">
+                <p className="font-bold text-amber-400 mb-1">Kiểm tra nhanh:</p>
                 <p>1. Đảm bảo ứng dụng <strong>Anki Desktop</strong> đang chạy trên máy.</p>
                 <p>2. Đảm bảo add-on <strong>AnkiConnect</strong> đã cài đặt (Code: <code>2055492159</code>).</p>
-                <p>
-                  3. Không mở các cửa sổ cấu hình hoặc pop-up chờ nào trong Anki.
-                </p>
+                <p>3. Không mở các cửa sổ cấu hình hoặc pop-up chờ nào trong Anki.</p>
               </div>
 
               <button
                 onClick={fetchTodayCards}
-                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg"
+                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-2xl text-xs font-bold transition-all shadow-lg"
               >
                 Thử kết nối lại
               </button>
             </div>
           )}
 
-          {/* Word List (Review Dashboard) */}
+          {/* Word List (Review Dashboard with Grid & Flashcard Toggle) */}
           {status === "success" && <WordList cards={cards} />}
         </main>
       </div>
 
-      {/* Cyber Footer */}
-      <footer className="mt-16 py-8 border-t border-slate-800/80 text-center text-xs text-slate-500 bg-[#070d1a]/50 backdrop-blur-md">
-        <p className="font-medium">
+      {/* Footer */}
+      <footer className="mt-16 py-8 border-t border-slate-800/80 text-center text-xs text-slate-500 bg-[#0c0e17]/60 backdrop-blur-md">
+        <p className="font-medium text-slate-400">
           DeutschFlow • Luyện tập A1 thông minh cùng AnkiConnect & Gemini AI
         </p>
-        <p className="text-[11px] text-slate-600 mt-1">Design System: Midnight Cyber Blue & OLED Dark</p>
+        <p className="text-[11px] text-slate-600 mt-1">
+          Aesthetic: Bauhaus Obsidian & Solar Amber • Bento Box Grid Architecture
+        </p>
       </footer>
     </div>
   );

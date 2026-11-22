@@ -38,41 +38,41 @@ export default function WordDrawer({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-md bg-[#0a1122]/95 backdrop-blur-2xl border-l border-sky-500/20 h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="w-full max-w-md bg-[#0e111d]/95 backdrop-blur-2xl border-l border-amber-500/20 h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
         {/* Header */}
         <div className="p-4 border-b border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+            <div className="w-8 h-8 rounded-xl bg-amber-950/60 border border-amber-500/30 flex items-center justify-center text-amber-400">
               <BookOpen size={16} />
             </div>
             <div>
               <h2 className="font-bold text-white text-sm">
                 Danh sách từ vựng hôm nay
               </h2>
-              <p className="text-[11px] text-cyan-400 font-medium">
+              <p className="text-[11px] text-amber-400 font-semibold">
                 {completedCount} / {cards.length} từ đã hoàn thành
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Search */}
-        <div className="p-3 border-b border-slate-800/80 bg-[#070d19]/80">
+        <div className="p-3 border-b border-slate-800/80 bg-[#0a0c16]/80">
           <div className="relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-cyan-400" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Tìm từ tiếng Đức hoặc nghĩa tiếng Việt..."
-              className="w-full pl-9 pr-3 py-2 text-xs bg-[#060b17] text-white placeholder:text-slate-500 border border-slate-700/80 rounded-xl focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all shadow-inner"
+              className="w-full pl-9 pr-3 py-2 text-xs bg-[#070912] text-white placeholder:text-slate-500 border border-slate-800 rounded-xl focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-all shadow-inner"
             />
           </div>
         </div>
@@ -102,17 +102,17 @@ export default function WordDrawer({
                     onClose();
                   }}
                   className={cn(
-                    "w-full text-left p-3 rounded-xl flex items-center justify-between gap-3 transition-all",
+                    "w-full text-left p-3.5 rounded-2xl flex items-center justify-between gap-3 transition-all",
                     isCurrent
-                      ? "bg-cyan-500/15 border-2 border-cyan-400/60 shadow-[0_0_15px_rgba(6,182,212,0.2)]"
-                      : "bg-[#0c1427]/60 hover:bg-[#101b33] border border-slate-800/70"
+                      ? "bg-amber-500/15 border-2 border-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.2)]"
+                      : "bg-[#121524]/60 hover:bg-[#161a2e] border border-slate-800/70"
                   )}
                 >
                   <div className="min-w-0 flex-1">
                     <p
                       className={cn(
                         "text-sm font-bold truncate",
-                        isCurrent ? "text-cyan-300" : "text-slate-200"
+                        isCurrent ? "text-amber-300" : "text-slate-200"
                       )}
                     >
                       {card.front}
@@ -124,11 +124,11 @@ export default function WordDrawer({
 
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     {isDone ? (
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
                         <CheckCircle2 size={11} /> Xong
                       </span>
                     ) : stepsDoneCount > 0 ? (
-                      <span className="flex items-center gap-1 text-[10px] font-semibold text-cyan-300 bg-cyan-950/60 px-2 py-0.5 rounded-full border border-cyan-500/30">
+                      <span className="flex items-center gap-1 text-[10px] font-semibold text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/30">
                         <Clock size={10} /> {stepsDoneCount}/3
                       </span>
                     ) : (

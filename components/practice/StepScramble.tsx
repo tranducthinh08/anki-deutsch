@@ -12,7 +12,6 @@ import {
   Sparkles,
   HelpCircle,
   Loader2,
-  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -186,7 +185,7 @@ export default function StepScramble({
       {/* Exercise Subtitle & Mode Switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="w-6 h-6 rounded-lg bg-sky-950/70 text-sky-400 border border-sky-500/30 flex items-center justify-center text-xs font-bold">
+          <span className="w-6 h-6 rounded-lg bg-amber-950/70 text-amber-400 border border-amber-500/30 flex items-center justify-center text-xs font-bold">
             2
           </span>
           <h3 className="text-sm font-bold text-slate-200">
@@ -200,16 +199,16 @@ export default function StepScramble({
             type="button"
             onClick={() => setMode(mode === "arrange" ? "translate" : "arrange")}
             className={cn(
-              "px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border",
+              "px-3.5 py-1.5 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-all border",
               mode === "translate"
-                ? "bg-cyan-500/20 text-cyan-300 border-cyan-400/50 shadow-[0_0_12px_rgba(6,182,212,0.3)]"
-                : "bg-slate-900/60 text-slate-400 hover:text-cyan-300 border-slate-800"
+                ? "bg-amber-500/20 text-amber-300 border-amber-400/50 shadow-[0_0_12px_rgba(245,158,11,0.3)]"
+                : "bg-slate-900/60 text-slate-400 hover:text-amber-300 border-slate-800"
             )}
             title="Bấm vào để chuyển chế độ: Xếp câu hoặc Tra nghĩa từng từ"
           >
             {mode === "translate" ? (
               <>
-                <Search size={13} className="text-cyan-400" />
+                <Search size={13} className="text-amber-400" />
                 <span>Đang bật: Chạm để dịch</span>
               </>
             ) : (
@@ -223,9 +222,9 @@ export default function StepScramble({
       </div>
 
       {/* Target Sentence Meaning Hint */}
-      <div className="bg-[#080d19] border border-sky-500/20 rounded-2xl p-4 text-center">
+      <div className="bg-[#0e111d] border border-amber-500/20 rounded-2xl p-4 text-center">
         <p className="text-xs text-slate-400 mb-1">Dịch nghĩa câu cần tạo:</p>
-        <p className="text-base font-extrabold text-cyan-200">
+        <p className="text-base font-extrabold text-amber-200">
           &quot;{exercise.translation}&quot;
         </p>
       </div>
@@ -233,10 +232,10 @@ export default function StepScramble({
       {/* Selected Words Dropzone (Magnetic Dock) */}
       <div
         className={cn(
-          "min-h-[110px] p-5 rounded-2xl border-2 border-dashed transition-all flex flex-wrap items-center justify-center gap-2.5",
+          "min-h-[110px] p-5 rounded-3xl border-2 border-dashed transition-all flex flex-wrap items-center justify-center gap-2.5",
           selectedWords.length === 0
-            ? "border-slate-800 bg-[#070c18]/60"
-            : "border-cyan-500/40 bg-[#091326]/60 shadow-[0_0_20px_rgba(6,182,212,0.1)]"
+            ? "border-slate-800 bg-[#090b14]/60"
+            : "border-amber-500/40 bg-[#121626]/60 shadow-[0_0_20px_rgba(245,158,11,0.1)]"
         )}
       >
         {selectedWords.length === 0 ? (
@@ -254,11 +253,11 @@ export default function StepScramble({
                 type="button"
                 onClick={() => handleDeselectWord(token)}
                 disabled={isAnswered}
-                className="group relative px-4 py-2.5 rounded-xl bg-gradient-to-b from-[#132342] to-[#0d1830] text-cyan-100 border border-cyan-400/40 hover:border-rose-400 font-bold text-sm shadow-[0_0_15px_rgba(6,182,212,0.15)] flex flex-col items-center transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                className="group relative px-4 py-2.5 rounded-2xl bg-gradient-to-b from-[#1c2236] to-[#141829] text-amber-100 border border-amber-400/40 hover:border-rose-400 font-bold text-sm shadow-[0_0_15px_rgba(245,158,11,0.15)] flex flex-col items-center transition-all transform hover:-translate-y-0.5 active:translate-y-0"
               >
                 <span>{token.text}</span>
                 {hasMeaning && (
-                  <span className="text-[10px] text-cyan-300/80 font-normal mt-0.5">
+                  <span className="text-[10px] text-amber-300/80 font-normal mt-0.5">
                     {token.meaning}
                   </span>
                 )}
@@ -273,13 +272,13 @@ export default function StepScramble({
         <div className="flex items-center justify-between text-xs text-slate-400 px-1">
           <span>Kho từ vựng:</span>
           {mode === "translate" && (
-            <span className="text-cyan-400 font-semibold animate-pulse">
+            <span className="text-amber-400 font-semibold animate-pulse">
               🔍 Chạm vào từ bất kỳ để nghe & xem nghĩa
             </span>
           )}
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-2.5 p-4 bg-[#080d19] rounded-2xl border border-slate-800 min-h-[90px]">
+        <div className="flex flex-wrap items-center justify-center gap-2.5 p-4 bg-[#0e111d] rounded-3xl border border-slate-800 min-h-[90px]">
           {availableWords.length === 0 ? (
             <p className="text-xs text-slate-500">Đã dùng hết tất cả các từ.</p>
           ) : (
@@ -292,15 +291,15 @@ export default function StepScramble({
                   onClick={() => handleSelectWord(token)}
                   disabled={isAnswered}
                   className={cn(
-                    "px-4 py-2.5 rounded-xl font-bold text-sm border transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex flex-col items-center",
+                    "px-4 py-2.5 rounded-2xl font-bold text-sm border transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex flex-col items-center",
                     mode === "translate"
-                      ? "bg-cyan-950/40 border-cyan-500/50 text-cyan-200 hover:bg-cyan-900/50 shadow-[0_0_12px_rgba(6,182,212,0.2)]"
-                      : "bg-[#0d162c] border-slate-700/80 hover:border-cyan-400/60 text-slate-100 hover:text-cyan-200 hover:bg-[#111e3b] shadow-sm"
+                      ? "bg-amber-950/40 border-amber-500/50 text-amber-200 hover:bg-amber-900/50 shadow-[0_0_12px_rgba(245,158,11,0.2)]"
+                      : "bg-[#141829] border-slate-700/80 hover:border-amber-400/60 text-slate-100 hover:text-amber-200 hover:bg-[#1a2036] shadow-sm"
                   )}
                 >
                   <span>{token.text}</span>
                   {hasMeaning && (
-                    <span className="text-[10px] text-cyan-300/80 font-normal mt-0.5">
+                    <span className="text-[10px] text-amber-300/80 font-normal mt-0.5">
                       {token.meaning}
                     </span>
                   )}
@@ -313,19 +312,19 @@ export default function StepScramble({
 
       {/* Active Word Tooltip Popover */}
       {activeTooltip && (
-        <div className="bg-[#0c162e] border border-cyan-500/30 rounded-xl p-3 flex items-center justify-between gap-3 text-xs animate-in fade-in duration-150">
+        <div className="bg-[#141829] border border-amber-500/30 rounded-2xl p-3 flex items-center justify-between gap-3 text-xs animate-in fade-in duration-150">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-cyan-300 text-sm">
+            <span className="font-bold text-amber-300 text-sm">
               {activeTooltip.word.text}:
             </span>
             <span className="text-slate-300">{activeTooltip.word.meaning}</span>
             {activeTooltip.loading && (
-              <Loader2 size={12} className="animate-spin text-cyan-400" />
+              <Loader2 size={12} className="animate-spin text-amber-400" />
             )}
           </div>
           <button
             onClick={() => setActiveTooltip(null)}
-            className="text-slate-500 hover:text-white text-xs px-1"
+            className="text-slate-400 hover:text-white text-xs px-1"
           >
             Đóng
           </button>
@@ -333,8 +332,8 @@ export default function StepScramble({
       )}
 
       {/* Grammar Rule Callout: Verb auf Position 2 */}
-      <div className="bg-sky-950/20 border border-sky-500/20 rounded-xl p-3 flex items-center gap-2 text-xs text-sky-300">
-        <Sparkles size={14} className="text-sky-400 flex-shrink-0" />
+      <div className="bg-amber-950/20 border border-amber-500/20 rounded-2xl p-3.5 flex items-center gap-2.5 text-xs text-amber-300">
+        <Sparkles size={15} className="text-amber-400 flex-shrink-0" />
         <span>
           <strong>Quy tắc A1 cơ bản:</strong> Trong câu trần thuật tiếng Đức, động từ chia luôn đứng ở <strong>vị trí số 2</strong>.
         </span>
@@ -347,7 +346,7 @@ export default function StepScramble({
             type="button"
             onClick={handleReset}
             disabled={selectedWords.length === 0}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-40 transition-colors"
+            className="px-4 py-2.5 rounded-2xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 disabled:opacity-40 transition-colors"
           >
             Xếp lại từ đầu
           </button>
@@ -355,7 +354,7 @@ export default function StepScramble({
             type="button"
             onClick={handleCheck}
             disabled={selectedWords.length === 0}
-            className="px-6 py-2.5 rounded-xl text-xs font-extrabold bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 hover:from-cyan-400 hover:to-blue-500 shadow-[0_0_15px_rgba(6,182,212,0.3)] disabled:opacity-40 transition-all"
+            className="px-6 py-2.5 rounded-2xl text-xs font-black bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-slate-950 hover:from-amber-300 hover:to-yellow-400 shadow-[0_0_20px_rgba(245,158,11,0.35)] disabled:opacity-40 transition-all"
           >
             Kiểm tra câu
           </button>
@@ -366,7 +365,7 @@ export default function StepScramble({
       {isAnswered && (
         <div
           className={cn(
-            "p-5 rounded-2xl border space-y-3 animate-in fade-in zoom-in-95 duration-200",
+            "p-5 sm:p-6 rounded-3xl border space-y-3.5 animate-in fade-in zoom-in-95 duration-200",
             isCorrect
               ? "bg-emerald-950/30 border-emerald-500/30 text-emerald-200"
               : "bg-rose-950/30 border-rose-500/30 text-rose-200"
@@ -400,12 +399,12 @@ export default function StepScramble({
             </button>
           </div>
 
-          <div className="text-xs space-y-1.5 text-slate-300 bg-[#070d19]/80 p-3.5 rounded-xl border border-slate-800">
+          <div className="text-xs space-y-1.5 text-slate-300 bg-[#0a0d18] p-4 rounded-2xl border border-slate-800">
             <div className="flex items-start gap-2">
               <Lightbulb size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-semibold text-slate-200">
-                  Câu đúng: <span className="text-cyan-300 font-bold">{exercise.correctSentence}</span>
+                  Câu đúng: <span className="text-amber-300 font-bold">{exercise.correctSentence}</span>
                 </p>
                 <p className="text-slate-400 mt-1">{exercise.explanation}</p>
               </div>
@@ -416,7 +415,7 @@ export default function StepScramble({
             {!isCorrect && (
               <button
                 onClick={handleReset}
-                className="px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition-colors"
+                className="px-3.5 py-2.5 rounded-2xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition-colors"
               >
                 <RotateCcw size={13} /> Thử lại
               </button>
@@ -424,7 +423,7 @@ export default function StepScramble({
 
             <button
               onClick={onComplete}
-              className="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 hover:from-cyan-400 hover:to-blue-500 flex items-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all"
+              className="px-5 py-2.5 rounded-2xl text-xs font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-slate-950 hover:from-amber-300 hover:to-yellow-400 flex items-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.35)] transition-all"
             >
               <span>Tiếp tục Bước 3 (Viết câu AI)</span>
               <ArrowRight size={14} />

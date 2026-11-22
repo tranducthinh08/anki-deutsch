@@ -123,23 +123,23 @@ export default function StepFillBlank({
       {/* Exercise Subtitle */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="w-6 h-6 rounded-lg bg-cyan-950/70 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-xs font-bold">
+          <span className="w-6 h-6 rounded-lg bg-amber-950/70 text-amber-400 border border-amber-500/30 flex items-center justify-center text-xs font-bold">
             1
           </span>
           <h3 className="text-sm font-bold text-slate-200">
             Điền từ thích hợp vào chỗ trống
           </h3>
         </div>
-        <span className="text-[11px] font-semibold text-cyan-400 bg-cyan-950/50 px-2.5 py-0.5 rounded-full border border-cyan-800/40">
-          Nhận diện ngữ cảnh
+        <span className="text-[11px] font-semibold text-amber-400 bg-amber-950/50 px-2.5 py-0.5 rounded-full border border-amber-800/40">
+          Nhận diện mẫu câu
         </span>
       </div>
 
       {/* German Sentence Box */}
-      <div className="bg-[#080d19] border border-cyan-500/25 rounded-2xl p-6 sm:p-8 text-center space-y-4 shadow-[0_0_25px_rgba(6,182,212,0.1)]">
+      <div className="bg-[#0e111d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 text-center space-y-4 shadow-[0_0_25px_rgba(245,158,11,0.08)]">
         <p className="text-xl sm:text-2xl font-extrabold text-white leading-relaxed tracking-tight">
           {parts[0]}
-          <span className="inline-block mx-1.5 px-3 py-1 rounded-xl bg-cyan-950/80 border-2 border-dashed border-cyan-400 text-cyan-300 font-black min-w-[100px] text-center shadow-[0_0_12px_rgba(6,182,212,0.3)]">
+          <span className="inline-block mx-1.5 px-3.5 py-1 rounded-2xl bg-amber-950/80 border-2 border-dashed border-amber-400 text-amber-300 font-black min-w-[100px] text-center shadow-[0_0_15px_rgba(245,158,11,0.25)]">
             {selectedOption || "_______"}
           </span>
           {parts[1]}
@@ -148,7 +148,7 @@ export default function StepFillBlank({
         {/* Translation Toggle */}
         <div className="pt-2">
           {showSentenceTranslation ? (
-            <div className="inline-flex items-center gap-2 bg-[#0c162e] border border-slate-800 px-4 py-2 rounded-xl text-xs text-slate-300 animate-in fade-in">
+            <div className="inline-flex items-center gap-2 bg-[#141829] border border-slate-800 px-4 py-2 rounded-xl text-xs text-slate-300 animate-in fade-in">
               <span>Nghĩa: &quot;{exercise.translation}&quot;</span>
               <button
                 onClick={() => setShowSentenceTranslation(false)}
@@ -161,7 +161,7 @@ export default function StepFillBlank({
           ) : (
             <button
               onClick={() => setShowSentenceTranslation(true)}
-              className="text-xs text-slate-500 hover:text-cyan-400 inline-flex items-center gap-1.5 font-medium transition-colors"
+              className="text-xs text-slate-400 hover:text-amber-400 inline-flex items-center gap-1.5 font-medium transition-colors"
             >
               <Eye size={13} />
               <span>Xem câu dịch tiếng Việt</span>
@@ -170,14 +170,14 @@ export default function StepFillBlank({
         </div>
       </div>
 
-      {/* 4 Choices Grid */}
+      {/* 4 Choices Grid (No nested button error!) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {parsedOptions.map((opt, idx) => {
           const isThisSelected = selectedOption === opt.de;
           const isThisCorrect =
             opt.de.trim().toLowerCase() === exercise.correctWord.trim().toLowerCase();
 
-          let cardStyle = "bg-[#0c1427]/90 border-slate-800 hover:border-cyan-400/50 hover:bg-[#101c36] text-slate-100 cursor-pointer";
+          let cardStyle = "bg-[#121524]/90 border-slate-800 hover:border-amber-400/50 hover:bg-[#181d33] text-slate-100 cursor-pointer";
 
           if (isAnswered) {
             if (isThisCorrect) {
@@ -185,7 +185,7 @@ export default function StepFillBlank({
             } else if (isThisSelected && !isThisCorrect) {
               cardStyle = "bg-rose-950/80 border-rose-400 text-rose-200 cursor-default";
             } else {
-              cardStyle = "bg-[#080d19]/60 border-slate-800 text-slate-500 opacity-50 cursor-default";
+              cardStyle = "bg-[#0c0e17]/60 border-slate-800 text-slate-500 opacity-50 cursor-default";
             }
           }
 
@@ -202,12 +202,12 @@ export default function StepFillBlank({
                 }
               }}
               className={cn(
-                "relative group w-full p-4 rounded-xl border font-bold text-base transition-all duration-200 flex items-center justify-between text-left select-none",
+                "relative group w-full p-4 rounded-2xl border font-bold text-base transition-all duration-200 flex items-center justify-between text-left select-none",
                 cardStyle
               )}
             >
               <div className="flex items-center gap-2.5">
-                <span className="w-5 h-5 rounded-md bg-slate-900 border border-slate-700/80 text-[10px] text-slate-400 flex items-center justify-center font-mono">
+                <span className="w-5 h-5 rounded-md bg-[#0a0c16] border border-slate-700/80 text-[10px] text-slate-400 flex items-center justify-center font-mono">
                   {idx + 1}
                 </span>
                 <span>{opt.de}</span>
@@ -218,7 +218,7 @@ export default function StepFillBlank({
                 <button
                   type="button"
                   onClick={(e) => handleInspect(e, opt)}
-                  className="p-1 rounded-lg text-slate-500 hover:text-cyan-300 hover:bg-cyan-950/40 transition-colors"
+                  className="p-1 rounded-lg text-slate-500 hover:text-amber-300 hover:bg-amber-950/40 transition-colors"
                   title={`Chạm để dịch nghĩa từ "${opt.de}"`}
                 >
                   <HelpCircle size={15} />
@@ -238,15 +238,15 @@ export default function StepFillBlank({
 
       {/* Popover: Inspect Word Translation */}
       {inspectingWord && (
-        <div className="bg-[#0c162e] border border-cyan-500/30 rounded-xl p-3 flex items-center justify-between gap-3 text-xs animate-in fade-in duration-150">
+        <div className="bg-[#141829] border border-amber-500/30 rounded-2xl p-3 flex items-center justify-between gap-3 text-xs animate-in fade-in duration-150">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-cyan-300 text-sm">{inspectingWord.de}:</span>
+            <span className="font-bold text-amber-300 text-sm">{inspectingWord.de}:</span>
             <span className="text-slate-300">{inspectingWord.vi}</span>
-            {loadingTranslation && <Loader2 size={12} className="animate-spin text-cyan-400" />}
+            {loadingTranslation && <Loader2 size={12} className="animate-spin text-amber-400" />}
           </div>
           <button
             onClick={() => setInspectingWord(null)}
-            className="text-slate-500 hover:text-white text-xs px-1"
+            className="text-slate-400 hover:text-white text-xs px-1"
           >
             Đóng
           </button>
@@ -257,7 +257,7 @@ export default function StepFillBlank({
       {isAnswered && (
         <div
           className={cn(
-            "p-5 rounded-2xl border space-y-3 animate-in fade-in zoom-in-95 duration-200",
+            "p-5 sm:p-6 rounded-3xl border space-y-3.5 animate-in fade-in zoom-in-95 duration-200",
             isCorrect
               ? "bg-emerald-950/30 border-emerald-500/30 text-emerald-200"
               : "bg-rose-950/30 border-rose-500/30 text-rose-200"
@@ -287,7 +287,7 @@ export default function StepFillBlank({
             </button>
           </div>
 
-          <div className="text-xs space-y-1.5 text-slate-300 bg-[#070d19]/80 p-3.5 rounded-xl border border-slate-800">
+          <div className="text-xs space-y-1.5 text-slate-300 bg-[#0a0d18] p-4 rounded-2xl border border-slate-800">
             <div className="flex items-start gap-2">
               <Lightbulb size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
               <div>
@@ -301,7 +301,7 @@ export default function StepFillBlank({
             {!isCorrect && (
               <button
                 onClick={handleReset}
-                className="px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition-colors"
+                className="px-3.5 py-2.5 rounded-2xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition-colors"
               >
                 <RotateCcw size={13} /> Thử lại
               </button>
@@ -309,7 +309,7 @@ export default function StepFillBlank({
 
             <button
               onClick={onComplete}
-              className="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 hover:from-cyan-400 hover:to-blue-500 flex items-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition-all"
+              className="px-5 py-2.5 rounded-2xl text-xs font-bold bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 text-slate-950 hover:from-amber-300 hover:to-yellow-400 flex items-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.35)] transition-all"
             >
               <span>Tiếp tục Bước 2 (Xếp câu)</span>
               <ArrowRight size={14} />
