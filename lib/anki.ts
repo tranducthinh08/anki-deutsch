@@ -23,21 +23,34 @@ async function ankiConnect<T>(
   baseUrl = "http://127.0.0.1:8765"
 ): Promise<T> {
   const body: AnkiConnectRequest = { action, version: 6, params };
-  const res = await fetch(baseUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-  if (!res.ok) {
-    throw new Error(`AnkiConnect HTTP error: ${res.status}`);
-  }
+  try {
+    const res = await fetch(baseUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
 
-  const data = await res.json();
-  if (data.error) {
-    throw new Error(`AnkiConnect error: ${data.error}`);
+    if (!res.ok) {
+      throw new Error(`AnkiConnect HTTP error: ${res.status}`);
+    }
+
+    const data = await res.json();
+    if (data.error) {
+      throw new Error(`AnkiConnect error: ${data.error}`);
+    }
+    return data.result as T;
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error("AnkiConnect phản hồi quá lâu (quá 5 giây). Hãy đảm bảo bạn không mở bảng cài đặt nào trong Anki.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
   }
-  return data.result as T;
 }
 
 /** Lấy danh sách card ID đã review hôm nay */

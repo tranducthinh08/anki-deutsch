@@ -10,7 +10,7 @@ type Status = "idle" | "loading" | "success" | "error";
 
 export default function HomePage() {
   const [cards, setCards] = useState<AnkiCard[]>([]);
-  const [status, setStatus] = useState<Status>("idle");
+  const [status, setStatus] = useState<Status>("loading");
   const [errorMsg, setErrorMsg] = useState("");
   const [lastFetched, setLastFetched] = useState<Date | null>(null);
   const [ankiOnline, setAnkiOnline] = useState<boolean | null>(null);
@@ -149,10 +149,11 @@ export default function HomePage() {
         )}
 
         {/* Loading */}
-        {status === "loading" && (
+        {(status === "loading" || status === "idle") && (
           <div className="flex flex-col items-center justify-center py-24 text-slate-400">
             <RefreshCw size={36} className="animate-spin mb-4 text-indigo-400" />
-            <p className="font-medium">Đang tải dữ liệu từ Anki...</p>
+            <p className="font-semibold text-slate-700">Đang kết nối Anki và tải từ vựng hôm nay...</p>
+            <p className="text-xs text-slate-400 mt-1">Đảm bảo Anki đang mở và không có cửa sổ cài đặt nào đang chờ</p>
           </div>
         )}
 
